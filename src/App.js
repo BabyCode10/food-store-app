@@ -1,26 +1,76 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Switch, Route, Redirect } from "react-router-dom";
+import axios from "axios";
+import {
+  Welcome,
+  Login,
+  Menu,
+  Payment,
+  Settings,
+  SettingMenu,
+  SettingCategory,
+  SettingUser,
+} from "./pages";
+import * as actions from "./redux/actions";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+axios.defaults.baseURL = "http://food-store.test/api";
+
+const App = () => {
+  const token = localStorage.getItem("token");
+  const auth = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchAuth = async () => {
+      dispatch(actions.fetchAuth(token));
+    };
+
+    fetchAuth();
+
+    dispatch(actions.fetchCart());
+  }, [token, dispatch]);
+
+  return auth.listened ? (
+    <Switch>
+      <ProtectedRoute path="/settings/user" component={SettingUser} />
+      <ProtectedRoute path="/settings/category" component={SettingCategory} />
+      <ProtectedRoute path="/settings/menu" component={SettingMenu} />
+      <ProtectedRoute path="/settings" component={Settings} />
+      <ProtectedRoute path="/payment" component={Payment} />
+      <ProtectedRoute path="/menu/:category?" component={Menu} />
+      <GuestRoute path="/login" component={Login} />
+      <GuestRoute path="/" component={Welcome} />
+    </Switch>
+  ) : (
+    <div className="h-screen min-h-screen flex items-center justify-center">
+      Please wait...
     </div>
   );
-}
+};
 
 export default App;
+
+const GuestRoute = ({ children, ...rest }) => {
+  const auth = useSelector((state) => state.auth);
+
+  let route = <Redirect to="/menu" />;
+
+  if (!auth.token) {
+    route = <Route {...rest}>{children}</Route>;
+  }
+
+  return route;
+};
+
+const ProtectedRoute = ({ children, ...rest }) => {
+  const auth = useSelector((state) => state.auth);
+
+  let route = <Redirect to="/login" />;
+
+  if (auth.token) {
+    route = <Route {...rest}>{children}</Route>;
+  }
+
+  return route;
+};
