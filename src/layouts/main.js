@@ -43,8 +43,7 @@ const Home = ({ children }) => {
             <NavLink
               className="flex items-center text-gray-800 group hover:border-r-4 hover:border-orange-400 pl-8 py-1 mb-8"
               activeClassName="text-orange-400 border-r-4 border-orange-400"
-              exact
-              to="/"
+              to="/menu"
             >
               <Grid className="group-hover:text-orange-400 mr-4" size={20} />
 
@@ -54,7 +53,7 @@ const Home = ({ children }) => {
             <NavLink
               className="flex items-center text-gray-800 group hover:border-r-4 hover:border-orange-400 pl-8 py-1 mb-8"
               activeClassName="text-orange-400 border-r-4 border-orange-400"
-              to="/orders"
+              to="/order"
             >
               <List className="group-hover:text-orange-400 mr-4" size={20} />
 
