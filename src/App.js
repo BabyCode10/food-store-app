@@ -15,7 +15,7 @@ import {
 } from "./pages";
 import * as actions from "./redux/actions";
 
-axios.defaults.baseURL = "http://food-store.test/api";
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
 const App = () => {
   const token = localStorage.getItem("token");

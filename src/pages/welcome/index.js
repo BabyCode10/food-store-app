@@ -10,7 +10,7 @@ const Welcome = () => {
       <div className="py-4">
         <div className="flex items-center justify-between container mx-auto">
           <div className="text-lg text-gray-800 font-semibold">
-            Foodstore
+            {process.env.REACT_APP_NAME}
           </div>
 
           {token ? (
@@ -24,7 +24,7 @@ const Welcome = () => {
       <div className="flex-1 flex flex-col items-center justify-center">
         <div>
           <h6 className="text-3xl text-gray-800 font-bold">
-            Welcome to Foodstore
+            Welcome to {process.env.REACT_APP_NAME}
           </h6>{" "}
           <br />{" "}
           <span className="text-lg text-gray-800 font-semibold">

@@ -90,7 +90,9 @@ const Payment = () => {
     <div className="h-screen min-h-screen flex flex-col overflow-hidden bg-gray-100">
       <div className="bg-white border-b py-8">
         <div className="container mx-auto">
-          <div className="text-md text-gray-800 font-semibold">Foodstore</div>
+          <div className="text-md text-gray-800 font-semibold">
+            {process.env.REACT_APP_NAME}
+          </div>
         </div>
       </div>
 
