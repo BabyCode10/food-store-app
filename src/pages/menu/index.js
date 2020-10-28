@@ -228,7 +228,7 @@ const Home = ({ match }) => {
 
         <h6 className="text-xl text-gray-800 font-bold mb-8">All Menu</h6>
 
-        <div className="flex flex-col overflow-y-auto">{menus}</div>
+        <div className="flex-1 flex flex-col overflow-y-auto">{menus}</div>
       </div>
 
       <div className="w-2/5 flex flex-col px-8">
