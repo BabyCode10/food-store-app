@@ -73,6 +73,10 @@ const deleteCart = (state, action) => {
   return { ...state, menus: newMenus, subTotal: subTotal, tax: tax };
 };
 
+const resetCart = (state) => {
+  return { ...state, menus: [], subTotal: 0, tax: 0, total: 0, cash: 0 };
+};
+
 const reducers = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.FETCH_CART_SUCCESS:
@@ -81,6 +85,8 @@ const reducers = (state = initialState, action) => {
       return addCart(state, action);
     case actionTypes.DELETE_CART_SUCCESS:
       return deleteCart(state, action);
+    case actionTypes.RESET_CART_SUCCESS:
+      return resetCart(state);
     default:
       return state;
   }
