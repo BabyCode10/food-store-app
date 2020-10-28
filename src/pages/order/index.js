@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory, useParams } from "react-router-dom";
 import NumberFormat from "react-number-format";
 import Main from "../../layouts/main";
-import { Search, Minus, ChevronDown } from "react-feather";
+import { Search, Minus, ChevronDown, Calendar, Filter } from "react-feather";
 import * as actions from "../../redux/actions";
 
 const Order = () => {
   const [state, setState] = useState({
     search: "",
     activeIndex: null,
+    date: null,
   });
+  const history = useHistory();
+  let { date } = useParams();
   const token = useSelector((state) => state.auth.token);
   const order = useSelector((state) => state.order);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(actions.fetchOrder(token));
-  }, [token, dispatch]);
+    dispatch(actions.fetchOrder(date, token));
+  }, [date, token, dispatch]);
 
   const onCollapseHandle = (id) => {
     if (state.activeIndex === id) {
@@ -179,6 +183,12 @@ const Order = () => {
     );
   });
 
+  const onDateHandle = (event) => {
+    event.preventDefault();
+    
+    history.push(`/order/${state.date}`);
+  };
+
   return (
     <Main>
       <div className="flex-1 flex flex-col px-8">
@@ -246,7 +256,31 @@ const Order = () => {
           </div>
         </div>
 
-        <h6 className="text-xl text-gray-800 font-bold mb-4">Order list</h6>
+        <div className="flex items-center justify-between mb-4">
+          <h6 className="text-xl text-gray-800 font-bold">Order list</h6>
+
+          <form className="flex items-center" onSubmit={onDateHandle}>
+            <div className="flex items-center text-gray-800 bg-gray-200 rounded-lg focus:outline-none px-3 py-2 mr-2">
+              <NumberFormat
+                className="w-full text-sm font-medium bg-transparent"
+                format="####-##-##"
+                mask="_"
+                value={state.date}
+                onChange={(event) =>
+                  setState({ ...state, date: event.target.value })
+                }
+              />
+              <Calendar size={16} />
+            </div>
+
+            <button
+              className="text-white bg-indigo-700 rounded-lg p-2"
+              type="submit"
+            >
+              <Filter size={16} />
+            </button>
+          </form>
+        </div>
 
         <div className="flex-1 flex flex-col overflow-y-auto">{orders}</div>
       </div>
