@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
+import { Check, ChevronRight } from "react-feather";
 import * as actions from "../../redux/actions";
 
 const schema = yup.object().shape({
@@ -14,8 +15,8 @@ const schema = yup.object().shape({
 
 const Payment = () => {
   const [state, setState] = useState({
-    cash: 0,
-    splash: true,
+    cash: "",
+    splash: false,
   });
   const history = useHistory();
   const cart = useSelector((state) => state.cart);
@@ -55,7 +56,7 @@ const Payment = () => {
     if (data.cash < cart.subTotal + cart.tax) {
       setError("cash", {
         type: "manual",
-        message: "cash must be greater than total",
+        message: "cash is not enough",
       });
     } else {
       dispatch(actions.addOrderRequest());
@@ -73,13 +74,19 @@ const Payment = () => {
         });
 
         dispatch(actions.addOrderSuccess(order.data));
+        dispatch(actions.resetCart());
+
+        setState({ ...state, splash: true });
       } catch (error) {
+        console.log(error);
         dispatch(actions.addOrderFailure());
       }
     }
   };
 
-  return (
+  return state.splash ? (
+    <Splash />
+  ) : (
     <div className="h-screen min-h-screen flex flex-col overflow-hidden bg-gray-100">
       <div className="bg-white border-b py-8">
         <div className="container mx-auto">
@@ -138,7 +145,13 @@ const Payment = () => {
               </div>
 
               <div className="flex-1 flex flex-col overflow-y-auto">
-                {details}
+                {details.length > 0 ? (
+                  details
+                ) : (
+                  <div className="text-sm text-gray-800 text-center">
+                    Cart is empty
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -206,3 +219,39 @@ const Payment = () => {
 };
 
 export default Payment;
+
+const Splash = () => {
+  const history = useHistory();
+
+  useEffect(() => {
+    setTimeout(() => {
+      history.push("/menu");
+    }, 3000);
+  }, [history]);
+
+  return (
+    <div className="h-screen min-h-screen flex flex-col items-center justify-center bg-indigo-500">
+      <div className="bg-white rounded-full p-3 mb-4">
+        <Check className="text-indigo-500" size={52} />
+      </div>
+
+      <h5 className="text-white text-2xl font-semibold mb-2">
+        Payment is successful.
+      </h5>
+
+      <p className="text-white text-lg font-medium mb-8">
+        thank you for ordering in our food store
+      </p>
+
+      <button
+        className="flex items-center text-md font-semibold bg-white text-indigo-500 rounded-lg px-8 py-2"
+        onClick={() => history.push("/menu")}
+      >
+        Back to main menu{" "}
+        <span className="bg-indigo-500 rounded-md p-1 ml-3">
+          <ChevronRight className="text-white" size={12} />
+        </span>
+      </button>
+    </div>
+  );
+};
