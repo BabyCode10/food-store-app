@@ -8,7 +8,7 @@ const Welcome = () => {
   return (
     <div className="h-screen min-h-screen flex flex-col">
       <div className="py-4">
-        <div className="flex items-center justify-between container mx-auto">
+        <div className="flex items-center justify-between container mx-auto px-8">
           <div className="text-lg text-gray-800 font-semibold">
             {process.env.REACT_APP_NAME}
           </div>
