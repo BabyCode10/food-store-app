@@ -7,6 +7,7 @@ import {
   Login,
   Menu,
   Payment,
+  Order,
   Settings,
   SettingMenu,
   SettingCategory,
@@ -37,10 +38,11 @@ const App = () => {
       <ProtectedRoute path="/settings/category" component={SettingCategory} />
       <ProtectedRoute path="/settings/menu" component={SettingMenu} />
       <ProtectedRoute path="/settings" component={Settings} />
+      <ProtectedRoute path="/order" component={Order} />
       <ProtectedRoute path="/payment" component={Payment} />
       <ProtectedRoute path="/menu/:category?" component={Menu} />
       <GuestRoute path="/login" component={Login} />
-      <GuestRoute path="/" component={Welcome} />
+      <Route exact path="/" component={Welcome} />
     </Switch>
   ) : (
     <div className="h-screen min-h-screen flex items-center justify-center">
