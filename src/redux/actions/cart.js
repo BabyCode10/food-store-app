@@ -56,3 +56,21 @@ export const deleteCart = (menu) => (dispatch) => {
 
   dispatch(deleteCartSuccess(menu));
 };
+
+const resetCartRequest = () => {
+  return {
+    type: actionTypes.RESET_CART_REQUEST,
+  };
+};
+
+const resetCartSuccess = () => {
+  return {
+    type: actionTypes.RESET_CART_SUCCESS,
+  };
+};
+
+export const resetCart = () => (dispatch) => {
+  dispatch(resetCartRequest());
+
+  dispatch(resetCartSuccess());
+};
