@@ -6,10 +6,10 @@ export const fetchMenuRequest = () => {
   };
 };
 
-export const fetchMenuSuccess = (data) => {
+export const fetchMenuSuccess = (menus) => {
   return {
     type: actionTypes.FETCH_MENU_SUCCESS,
-    data: data,
+    menus: menus,
   };
 };
 
@@ -25,10 +25,10 @@ export const addMenuRequest = () => {
   };
 };
 
-export const addMenuSuccess = (data) => {
+export const addMenuSuccess = (menu) => {
   return {
     type: actionTypes.ADD_MENU_SUCCESS,
-    data: data,
+    menu: menu,
   };
 };
 
@@ -44,10 +44,10 @@ export const editMenuRequest = () => {
   };
 };
 
-export const editMenuSuccess = (data) => {
+export const editMenuSuccess = (menu) => {
   return {
     type: actionTypes.EDIT_MENU_SUCCESS,
-    data: data,
+    menu: menu,
   };
 };
 
@@ -63,9 +63,10 @@ export const deleteMenuRequest = () => {
   };
 };
 
-export const deleteMenuSuccess = () => {
+export const deleteMenuSuccess = (menu) => {
   return {
     type: actionTypes.DELETE_MENU_SUCCESS,
+    menu: menu,
   };
 };
 
