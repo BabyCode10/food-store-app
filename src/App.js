@@ -38,8 +38,8 @@ const App = () => {
       <ProtectedRoute path="/settings/category" component={SettingCategory} />
       <ProtectedRoute path="/settings/menu" component={SettingMenu} />
       <ProtectedRoute path="/settings" component={Settings} />
-      <ProtectedRoute path="/order" component={Order} />
-      <ProtectedRoute path="/payment" component={Payment} />
+      <ProtectedRoute path="/order/:date?" component={Order} />
+      <ProtectedRoute path="/payment/" component={Payment} />
       <ProtectedRoute path="/menu/:category?" component={Menu} />
       <GuestRoute path="/login" component={Login} />
       <Route exact path="/" component={Welcome} />
