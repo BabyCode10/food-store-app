@@ -78,7 +78,7 @@ const Home = ({ match }) => {
         activeClassName="text-white bg-indigo-700 border-indigo-700"
         to={`/menu/${category.slug}`}
       >
-        <div className="text-sm font-medium group-hover:text-white">
+        <div className="text-sm font-medium group-hover:text-white truncate">
           {category.name}
         </div>
       </NavLink>
