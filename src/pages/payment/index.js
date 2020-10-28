@@ -96,14 +96,14 @@ const Payment = () => {
   ) : (
     <div className="h-screen min-h-screen flex flex-col overflow-hidden bg-gray-100">
       <div className="bg-white border-b py-8">
-        <div className="container mx-auto">
+        <div className="container mx-auto px-8">
           <div className="text-md text-gray-800 font-semibold">
             {process.env.REACT_APP_NAME}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden container mx-auto py-4">
+      <div className="flex-1 flex flex-col overflow-hidden container mx-auto px-8 py-4">
         <div className="flex-1 overflow-hidden flex">
           <div className="w-4/6 flex flex-col pr-4">
             <div className="flex-1 flex flex-col overflow-hidden border rounded-md bg-white p-6">
@@ -244,7 +244,7 @@ const Payment = () => {
       </div>
 
       <div className="bg-white border-t py-3">
-        <div className="flex items-center justify-between container mx-auto">
+        <div className="flex items-center justify-between container mx-auto px-8">
           <button
             className="text-md text-gray-800 font-semibold"
             onClick={() => history.goBack()}
