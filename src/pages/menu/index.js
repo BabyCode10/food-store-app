@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink, Link } from "react-router-dom";
 import { Search, Trash } from "react-feather";
+import NumberFormat from "react-number-format";
 import axios from "axios";
 import Main from "../../layouts/main";
 import * as actions from "../../redux/actions";
@@ -108,7 +109,15 @@ const Home = ({ match }) => {
 
             <p className="text-sm text-gray-600 mb-2">{menu.description}</p>
 
-            <p className="text-md text-gray-800 font-bold">Rp {menu.price},-</p>
+            <p className="text-md text-gray-800 font-bold">
+              <NumberFormat
+                value={menu.price}
+                displayType={"text"}
+                thousandSeparator={true}
+                prefix={"Rp "}
+                renderText={(value) => value}
+              />
+            </p>
           </div>
 
           <div className="absolute inset-0 h-full w-full flex items-center justify-center bg-gray-400 opacity-25">
@@ -138,7 +147,13 @@ const Home = ({ match }) => {
           </p>
 
           <p className="text-md text-gray-800 font-bold group-hover:text-white">
-            Rp {menu.price},-
+            <NumberFormat
+              value={menu.price}
+              displayType={"text"}
+              thousandSeparator={true}
+              prefix={"Rp "}
+              renderText={(value) => value}
+            />
           </p>
         </div>
       </button>
@@ -162,7 +177,13 @@ const Home = ({ match }) => {
         </div>
 
         <div className="flex-1 text-sm text-gray-600 text-right font-semibold">
-          Rp {menu.price},-
+          <NumberFormat
+            value={menu.price}
+            displayType={"text"}
+            thousandSeparator={true}
+            prefix={"Rp "}
+            renderText={(value) => value}
+          />
         </div>
 
         <button className="ml-4" onClick={() => deleteCartHandler(menu)}>
@@ -237,21 +258,39 @@ const Home = ({ match }) => {
                   Sub Total
                 </div>
                 <div className="text-md text-gray-800 font-semibold">
-                  Rp {cart.subTotal},-
+                  <NumberFormat
+                    value={cart.subTotal}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"Rp "}
+                    renderText={(value) => value}
+                  />
                 </div>
               </li>
 
               <li className="flex items-center justify-between">
                 <div className="text-md text-gray-800 font-semibold">Tax</div>
                 <div className="text-md text-gray-800 font-semibold">
-                  Rp {cart.tax},-
+                  <NumberFormat
+                    value={cart.tax}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"Rp "}
+                    renderText={(value) => value}
+                  />
                 </div>
               </li>
 
               <li className="flex items-center justify-between">
                 <div className="text-md text-gray-800 font-semibold">Total</div>
                 <div className="text-md text-gray-800 font-semibold">
-                  Rp {cart.subTotal + cart.tax},-
+                  <NumberFormat
+                    value={cart.subTotal + cart.tax}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"Rp "}
+                    renderText={(value) => value}
+                  />
                 </div>
               </li>
             </ul>

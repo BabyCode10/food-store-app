@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import NumberFormat from "react-number-format";
 import axios from "axios";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -23,13 +24,14 @@ const schema = yup.object().shape({
   description: yup.string().required(),
   url: yup.string().required().max(255),
   category_id: yup.string().required(),
-  price: yup.number().required().moreThan(0),
+  price: yup.string().required(),
   stock: yup.boolean().required(),
 });
 
 const SettingMenu = () => {
   const [state, setState] = useState({
     search: "",
+    price: null,
     categories: [],
     menus: [],
     menu: null,
@@ -39,7 +41,7 @@ const SettingMenu = () => {
   const token = useSelector((state) => state.auth.token);
   const menu = useSelector((state) => state.menu);
   const dispatch = useDispatch();
-  let { register, handleSubmit, reset, errors } = useForm({
+  let { register, handleSubmit, reset, errors, setError } = useForm({
     resolver: yupResolver(schema),
   });
   let { handleSubmit: handleDelete } = useForm();
@@ -82,7 +84,13 @@ const SettingMenu = () => {
           <span className="text-indigo-800">{menu.category.name}</span>
         </td>
         <td className="border text-gray-800 text-sm text-center font-medium px-4 py-3">
-          Rp {menu.price},-
+          <NumberFormat
+            value={menu.price}
+            displayType={"text"}
+            thousandSeparator={true}
+            prefix={"Rp "}
+            renderText={(value) => value}
+          />
         </td>
         <td className="border text-gray-800 text-sm text-center font-medium px-4 py-3">
           {menu.stock ? "Ready" : "Not Ready"}
@@ -109,43 +117,52 @@ const SettingMenu = () => {
   });
 
   const onSubmit = async (data) => {
-    if (!state.menu) {
-      dispatch(actions.addMenuRequest());
-
-      try {
-        const menu = await axios.post("/menu", data, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        dispatch(actions.addMenuSuccess(menu.data));
-
-        setState({ ...state, show: !state.show });
-      } catch (error) {
-        dispatch(actions.addMenuFailure());
-      }
+    if (state.price < 1) {
+      setError("price", {
+        type: "manual",
+        message: "price must be more than 0",
+      });
     } else {
-      dispatch(actions.editMenuRequest());
+      data.price = state.price;
 
-      try {
-        const menu = await axios.put(`/menu/${state.menu.id}`, data, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      if (!state.menu) {
+        dispatch(actions.addMenuRequest());
 
-        dispatch(actions.editMenuSuccess(menu.data));
+        try {
+          const menu = await axios.post("/menu", data, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-        setState({ ...state, menu: null, show: !state.show });
-      } catch (error) {
-        dispatch(actions.editMenuFailure());
+          dispatch(actions.addMenuSuccess(menu.data));
+
+          setState({ ...state, price: null, show: !state.show });
+        } catch (error) {
+          dispatch(actions.addMenuFailure());
+        }
+      } else {
+        dispatch(actions.editMenuRequest());
+
+        try {
+          const menu = await axios.put(`/menu/${state.menu.id}`, data, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          dispatch(actions.editMenuSuccess(menu.data));
+
+          setState({ ...state, price: null, menu: null, show: !state.show });
+        } catch (error) {
+          dispatch(actions.editMenuFailure());
+        }
       }
-    }
 
-    reset();
+      reset();
+    }
   };
 
   const onDelete = async () => {
@@ -183,6 +200,7 @@ const SettingMenu = () => {
 
     setState({
       ...state,
+      price: null,
       menu: null,
       categories: categories.data,
       show: !state.show,
@@ -201,6 +219,7 @@ const SettingMenu = () => {
 
     setState({
       ...state,
+      price: menu.data.price,
       menu: menu.data,
       categories: categories.data,
       show: !state.show,
@@ -228,6 +247,10 @@ const SettingMenu = () => {
             className="text-md text-gray-800 w-full bg-transparent focus:outline-none"
             type="text"
             placeholder="Search..."
+            onChange={(event) =>
+              setState({ ...state, search: event.target.value })
+            }
+            value={state.search}
           />
         </div>
 
@@ -324,9 +347,8 @@ const SettingMenu = () => {
                 name="description"
                 placeholder="Description"
                 ref={register}
-              >
-                {state.menu && state.menu.description}
-              </textarea>
+                defaultValue={state.menu && state.menu.description}
+              ></textarea>
 
               {errors.description && (
                 <span className="text-sm text-red-400 text-center">
@@ -381,13 +403,19 @@ const SettingMenu = () => {
             </div>
 
             <div className="flex flex-col mb-4">
-              <input
-                className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+              <NumberFormat
+                className="text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
                 name="price"
-                type="text"
                 placeholder="Price"
-                defaultValue={state.menu ? state.menu.price : ""}
-                ref={register}
+                thousandSeparator={true}
+                prefix={"Rp "}
+                getInputRef={register}
+                onValueChange={(values) => {
+                  const { value } = values;
+
+                  setState({ ...state, price: value });
+                }}
+                defaultValue={state.menu && state.menu.price}
               />
 
               {errors.price && (
@@ -465,29 +493,36 @@ const SettingMenu = () => {
             <div className="bg-red-400 rounded-full p-2">
               <Trash className="text-red-700" size={20} />
             </div>
-
-            <div>
-              <h6 className="text-xl text-gray-800 mb-2">Delete menu</h6>
-
-              <p className="text-sm text-gray-600">
-                Are you sure you want to delete menu? All of your data will be
-                permanently deleted. This action cannot be undone.
-              </p>
-            </div>
           </div>
 
-          <div className="flex items-center justify-end">
-            <button className="text-sm text-gray-800 px-8 py-2">Cancel</button>
+          <div>
+            <h6 className="text-xl text-gray-800 mb-2">Delete menu</h6>
 
-            <form onSubmit={handleDelete(onDelete)}>
-              <button
-                className="text-sm text-white bg-red-700 rounded-lg px-8 py-2"
-                type="submit"
-              >
-                Delete
-              </button>
-            </form>
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete menu? All of your data will be
+              permanently deleted. This action cannot be undone.
+            </p>
           </div>
+        </div>
+
+        <div className="flex items-center justify-end">
+          <button
+            className="text-sm text-gray-800 px-8 py-2"
+            onClick={() =>
+              setState({ ...state, menu: null, delete: !state.delete })
+            }
+          >
+            Cancel
+          </button>
+
+          <form onSubmit={handleDelete(onDelete)}>
+            <button
+              className="text-sm text-white bg-red-700 rounded-lg px-8 py-2"
+              type="submit"
+            >
+              Delete
+            </button>
+          </form>
         </div>
       </Modal>
     </Main>

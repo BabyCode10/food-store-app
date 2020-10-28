@@ -4,13 +4,13 @@ import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import NumberFormat from "react-number-format";
 import axios from "axios";
 import { Check, ChevronRight } from "react-feather";
 import * as actions from "../../redux/actions";
 
 const schema = yup.object().shape({
   name: yup.string().required().max(255),
-  cash: yup.number().required().moreThan(0),
 });
 
 const Payment = () => {
@@ -46,14 +46,20 @@ const Payment = () => {
         </div>
 
         <div className="flex-1 text-sm text-gray-600 text-right font-semibold">
-          Rp {menu.price * menu.quantity},-
+          <NumberFormat
+            value={menu.price * menu.quantity}
+            displayType={"text"}
+            thousandSeparator={true}
+            prefix={"Rp "}
+            renderText={(value) => <span>{value}</span>}
+          />
         </div>
       </div>
     );
   });
 
   const onSubmit = async (data) => {
-    if (data.cash < cart.subTotal + cart.tax) {
+    if (state.cash < cart.subTotal + cart.tax) {
       setError("cash", {
         type: "manual",
         message: "cash is not enough",
@@ -62,6 +68,7 @@ const Payment = () => {
       dispatch(actions.addOrderRequest());
 
       try {
+        data.cash = state.cash;
         data.sub_total = cart.subTotal;
         data.tax = cart.tax;
         data.details = cart.menus;
@@ -122,16 +129,21 @@ const Payment = () => {
                 </div>
 
                 <div className="flex flex-col mb-4">
-                  <input
+                  <NumberFormat
                     className="text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
-                    name="cash"
-                    type="text"
                     placeholder="Cash"
                     ref={register}
                     onChange={(event) =>
-                      setState({ ...state, cash: event.target.value })
+                      setState({
+                        ...state,
+                        cash: event.target.value
+                          .replace("Rp", "")
+                          .replace(",", ""),
+                      })
                     }
                     value={state.cash}
+                    thousandSeparator={true}
+                    prefix={"Rp "}
                   />
 
                   {errors.cash && (
@@ -167,30 +179,62 @@ const Payment = () => {
               <div className="divide-y-2 divide-dashed">
                 <ul>
                   <li className="flex items-center justify-between text-md text-gray-800 font-semibold py-2">
-                    Sub total <span>Rp {cart.subTotal},-</span>
+                    Sub total{" "}
+                    <NumberFormat
+                      value={cart.subTotal}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      prefix={"Rp "}
+                      renderText={(value) => <span>{value}</span>}
+                    />
                   </li>
                   <li className="flex items-center justify-between text-md text-gray-800 font-semibold py-2">
-                    Tax <span>Rp {cart.tax},-</span>
+                    Tax{" "}
+                    <NumberFormat
+                      value={cart.tax}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      prefix={"Rp "}
+                      renderText={(value) => <span>{value}</span>}
+                    />
                   </li>
                 </ul>
 
                 <div className="flex items-center justify-between text-md text-gray-800 font-semibold py-2">
-                  Total <span>Rp {cart.subTotal + cart.tax},-</span>
+                  Total{" "}
+                  <NumberFormat
+                    value={cart.subTotal + cart.tax}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"Rp "}
+                    renderText={(value) => <span>{value}</span>}
+                  />
                 </div>
 
                 <ul>
                   <li className="flex items-center justify-between text-md text-gray-800 font-semibold py-2">
-                    Cash <span>Rp {state.cash},-</span>
+                    Cash{" "}
+                    <NumberFormat
+                      value={state.cash || 0}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      prefix={"Rp "}
+                      renderText={(value) => <span>{value}</span>}
+                    />
                   </li>
                   <li className="flex items-center justify-between text-md text-gray-800 font-semibold py-2">
                     Return{" "}
-                    <span>
-                      Rp{" "}
-                      {state.cash - cart.subTotal < 1
-                        ? 0
-                        : state.cash - cart.subTotal}
-                      ,-
-                    </span>
+                    <NumberFormat
+                      value={
+                        state.cash - cart.subTotal < 1
+                          ? 0
+                          : state.cash - cart.subTotal
+                      }
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      prefix={"Rp "}
+                      renderText={(value) => <span>{value}</span>}
+                    />
                   </li>
                 </ul>
               </div>

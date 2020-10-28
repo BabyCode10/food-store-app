@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import NumberFormat from "react-number-format";
 import Main from "../../layouts/main";
 import { Search, Minus, ChevronDown } from "react-feather";
 import * as actions from "../../redux/actions";
@@ -84,7 +85,13 @@ const Order = () => {
             >
               cash:
             </span>{" "}
-            Rp {order.cash},-
+            <NumberFormat
+              value={order.cash}
+              displayType={"text"}
+              thousandSeparator={true}
+              prefix={"Rp "}
+              renderText={(value) => value}
+            />
           </div>
 
           <div className="w-3/12 text-center text-sm font-medium">
@@ -98,7 +105,13 @@ const Order = () => {
             >
               pay:
             </span>{" "}
-            Rp {order.sub_total + order.tax},-
+            <NumberFormat
+              value={order.sub_total + order.tax}
+              displayType={"text"}
+              thousandSeparator={true}
+              prefix={"Rp "}
+              renderText={(value) => value}
+            />
           </div>
 
           <div className="w-3/12 flex items-center justify-center">
@@ -132,7 +145,13 @@ const Order = () => {
                     {detail.menu.name}({detail.quantity})
                   </div>
                   <div className="w-1/2 text-center">
-                    Rp {detail.menu.price},-
+                    <NumberFormat
+                      value={detail.menu.price}
+                      displayType={"text"}
+                      thousandSeparator={true}
+                      prefix={"Rp "}
+                      renderText={(value) => value}
+                    />
                   </div>
                 </div>
               ))}
@@ -142,12 +161,16 @@ const Order = () => {
               <div className="text-sm text-gray-500 font-medium">Total</div>
 
               <div className="text-sm text-gray-800 font-medium">
-                Rp{" "}
-                {order.order_details.reduce(
-                  (total, detail) => total + detail.total,
-                  0
-                )}
-                ,-
+                <NumberFormat
+                  value={order.order_details.reduce(
+                    (total, detail) => total + detail.total,
+                    0
+                  )}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"Rp "}
+                  renderText={(value) => value}
+                />
               </div>
             </div>
           </div>
@@ -204,12 +227,16 @@ const Order = () => {
           <div className="flex-1 p-2">
             <div className="border border-indigo-700 rounded-md bg-indigo-700 p-4">
               <div className="text-2xl text-white font-semibold truncate">
-                Rp{" "}
-                {order.orders.reduce(
-                  (total, order) => total + (order.sub_total + order.tax),
-                  0
-                )}
-                ,-
+                <NumberFormat
+                  value={order.orders.reduce(
+                    (total, order) => total + (order.sub_total + order.tax),
+                    0
+                  )}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"Rp "}
+                  renderText={(value) => value}
+                />
               </div>
 
               <div className="text-sm text-white font-light truncate">
