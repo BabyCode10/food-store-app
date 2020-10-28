@@ -9,7 +9,9 @@ const reducers = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.FETCH_ORDER_SUCCESS:
       return { ...state, orders: action.orders };
-    case actionTypes.ADD_CART_SUCCESS:
+    case actionTypes.ADD_ORDER_SUCCESS:
+      localStorage.removeItem("cart");
+      
       return { ...state, orders: [...state.orders, action.order] };
     default:
       return state;
