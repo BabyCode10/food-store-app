@@ -164,31 +164,31 @@ const Home = ({ match }) => {
   cart.menus.forEach((menu, index) => {
     carts.push(
       <li key={index} className="flex items-center justify-between py-2">
-        <div className="flex-1 flex items-center">
-          <div className="w-10 h-10 bg-gray-400 rounded-lg mr-2"></div>
+        <div className="w-2/5 flex items-center">
+          <div className="min-w-10 h-10 bg-gray-400 rounded-lg mr-2"></div>
 
           <p className="text-sm text-gray-800 font-semibold truncate">
             {menu.name}
           </p>
         </div>
 
-        <div className="flex-1 text-sm text-gray-600 text-center font-semibold">
+        <div className="w-1/5 text-sm text-gray-600 text-center font-semibold">
           {menu.quantity}x
         </div>
 
-        <div className="flex-1 text-sm text-gray-600 text-right font-semibold">
+        <div className="w-2/5 flex items-center justify-end text-sm text-gray-600 text-right font-semibold">
           <NumberFormat
             value={menu.price}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"Rp "}
-            renderText={(value) => value}
+            renderText={(value) => <span className="truncate">{value}</span>}
           />
-        </div>
 
-        <button className="ml-4" onClick={() => deleteCartHandler(menu)}>
-          <Trash className="text-red-400" height={16} />
-        </button>
+          <button className="ml-4" onClick={() => deleteCartHandler(menu)}>
+            <Trash className="text-red-400" height={16} />
+          </button>
+        </div>
       </li>
     );
   });
