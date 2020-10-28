@@ -41,7 +41,7 @@ const Login = () => {
     <div className="h-screen min-h-screen flex bg-gray-100">
       <div className="w-1/3 flex flex-col items-center justify-center">
         <h6 className="text-xl text-gray-800 font-bold mb-8">
-          Welcome to <span className="text-indigo-800">FoodStore</span>
+          Welcome to Foodstore
         </h6>
 
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
@@ -90,7 +90,7 @@ const Login = () => {
         <img className="w-2/3 mb-4" src={FoodImage} alt="Login" />
 
         <h5 className="text-2xl text-gray-800 font-bold">
-          <span className="text-indigo-800">FoodStore</span> easy way to order
+          <span className="text-indigo-800">Foodstore</span> easy way to order
           food.
         </h5>
       </div>
