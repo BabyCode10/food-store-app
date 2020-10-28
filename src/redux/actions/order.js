@@ -20,11 +20,11 @@ const fetchOrderFailure = () => {
   };
 };
 
-export const fetchOrder = (token) => async (dispatch) => {
+export const fetchOrder = (date = null, token) => async (dispatch) => {
   dispatch(fetchOrderRequest());
 
   try {
-    const orders = await axios.get("/order", {
+    const orders = await axios.get(`/order/${date}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
