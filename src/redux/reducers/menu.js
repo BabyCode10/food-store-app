@@ -5,17 +5,17 @@ const initialState = {
 };
 
 const fetchMenu = (state, action) => {
-  return { ...state, menus: action.data };
+  return { ...state, menus: action.menus };
 };
 
 const addMenu = (state, action) => {
-  return { ...state, menus: [...state.menus, action.data] };
+  return { ...state, menus: [...state.menus, action.menu] };
 };
 
 const editMenu = (state, action) => {
   const newMenus = state.menus.map((menu) => {
-    if (menu.id === action.data.id) {
-      return action.data;
+    if (menu.id === action.menu.id) {
+      return action.menu;
     }
 
     return menu;
@@ -25,7 +25,7 @@ const editMenu = (state, action) => {
 };
 
 const deleteMenu = (state, action) => {
-  const newMenus = state.menus.filter((menu) => menu.id !== action.data.id);
+  const newMenus = state.menus.filter((menu) => menu.id !== action.menu.id);
 
   return { ...state, menus: newMenus };
 };
