@@ -30,8 +30,8 @@ export const fetchOrder = (token) => async (dispatch) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    
-    dispatch(fetchOrderSuccess(orders));
+
+    dispatch(fetchOrderSuccess(orders.data));
   } catch (error) {
     dispatch(fetchOrderFailure(error.response.data));
   }
@@ -39,19 +39,19 @@ export const fetchOrder = (token) => async (dispatch) => {
 
 export const addOrderRequest = () => {
   return {
-    type: actionTypes.ADD_CART_REQUEST,
+    type: actionTypes.ADD_ORDER_REQUEST,
   };
 };
 
 export const addOrderSuccess = (order) => {
   return {
-    type: actionTypes.ADD_CART_SUCCESS,
+    type: actionTypes.ADD_ORDER_SUCCESS,
     order: order,
   };
 };
 
 export const addOrderFailure = () => {
   return {
-    type: actionTypes.ADD_CART_FAILURE,
+    type: actionTypes.ADD_ORDER_FAILURE,
   };
 };
