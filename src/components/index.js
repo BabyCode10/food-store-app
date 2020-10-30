@@ -1,3 +1,4 @@
 import Modal from "./modal";
+import Message from "./message";
 
-export { Modal };
+export { Modal, Message };
