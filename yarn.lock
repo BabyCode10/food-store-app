@@ -8722,7 +8722,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.4"
 
-prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -8954,6 +8954,13 @@ react-feather@^2.0.8:
   integrity sha512-J0dCEOvOxpovHeOVj3+8mAhN3/UERTfX6rSxnV6x4E+0s+STY536jhSjRfpSvTQA0SSFjYr4KrpPfdsLmK+zZg==
   dependencies:
     prop-types "^15.7.2"
+
+react-flash-message@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/react-flash-message/-/react-flash-message-1.0.4.tgz#b2a6e8754ecbe8d1a8047ef526e9cd41e94c9445"
+  integrity sha512-26Xp5/YhmWN2ZcSU24y+FLTWbdwL5/l1jySb314GlXMPFOtbDRQeohFEoAXI19ISWiBciV96IIeZDIcbek6r/Q==
+  dependencies:
+    prop-types "^15.6.1"
 
 react-hook-form@^6.9.5:
   version "6.9.5"
