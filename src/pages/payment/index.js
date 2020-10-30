@@ -34,7 +34,13 @@ const Payment = () => {
         className="bg-gray-100 flex items-center justify-between border rounded-md px-3 py-2 mb-3"
       >
         <div className="flex-1 flex items-center">
-          <div className="w-10 h-10 bg-gray-400 rounded-lg mr-2"></div>
+          <div className="min-w-10 h-10 w-10 flex items-center justify-center overflow-hidden bg-gray-400 rounded-lg mr-2">
+            <img
+              className="object-cover w-full text-gray-800 text-xs text-center font-medium truncate"
+              src={menu.url}
+              alt={menu.name}
+            />
+          </div>
 
           <p className="text-sm text-gray-800 font-semibold truncate">
             {menu.name}

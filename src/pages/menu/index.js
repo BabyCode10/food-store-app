@@ -135,7 +135,13 @@ const Home = ({ match }) => {
         className="flex text-left items-center border-2 rounded-xl group hover:bg-indigo-700 hover:border-indigo-700 p-4 mb-4"
         onClick={() => addToCartHandler(menu)}
       >
-        <div className="w-24 h-24 bg-gray-400 rounded-xl mr-4 group-hover:bg-indigo-500"></div>
+        <div className="w-24 h-24 flex items-center justify-center overflow-hidden bg-gray-400 rounded-xl mr-4 group-hover:bg-indigo-500">
+          <img
+            className="object-cover w-full text-gray-800 text-sm text-center font-medium"
+            src={menu.url}
+            alt={menu.name}
+          />
+        </div>
 
         <div className="flex-1">
           <p className="text-md text-gray-800 font-bold mb-1 group-hover:text-white">
@@ -165,7 +171,13 @@ const Home = ({ match }) => {
     carts.push(
       <li key={index} className="flex items-center justify-between py-2">
         <div className="w-2/5 flex items-center">
-          <div className="min-w-10 h-10 bg-gray-400 rounded-lg mr-2"></div>
+          <div className="min-w-10 h-10 w-10 flex items-center justify-center overflow-hidden bg-gray-400 rounded-lg mr-2">
+            <img
+              className="object-cover w-full text-gray-800 text-xs text-center font-medium truncate"
+              src={menu.url}
+              alt={menu.name}
+            />
+          </div>
 
           <p className="text-sm text-gray-800 font-semibold truncate">
             {menu.name}
