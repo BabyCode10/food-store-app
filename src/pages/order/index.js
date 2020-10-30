@@ -146,11 +146,12 @@ const Order = () => {
                   className="flex text-sm text-gray-800 font-medium"
                 >
                   <div className="w-1/2">
-                    {detail.menu.name}({detail.quantity})
+                    {detail.menu ? detail.menu.name : "Menu not found"}(
+                    {detail.quantity})
                   </div>
                   <div className="w-1/2 text-center">
                     <NumberFormat
-                      value={detail.menu.price}
+                      value={detail.menu?.price}
                       displayType={"text"}
                       thousandSeparator={true}
                       prefix={"Rp "}
@@ -185,7 +186,7 @@ const Order = () => {
 
   const onDateHandle = (event) => {
     event.preventDefault();
-    
+
     history.push(`/order/${state.date}`);
   };
 
