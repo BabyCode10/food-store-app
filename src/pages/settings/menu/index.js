@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import NumberFormat from "react-number-format";
+import FlashMessage from "react-flash-message";
 import axios from "axios";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -17,7 +18,7 @@ import {
 
 import * as actions from "../../../redux/actions";
 import Main from "../../../layouts/main";
-import { Modal } from "../../../components";
+import { Modal, Message } from "../../../components";
 
 const schema = yup.object().shape({
   name: yup.string().required().max(255),
@@ -37,6 +38,10 @@ const SettingMenu = () => {
     menu: null,
     show: false,
     delete: false,
+    flash: {
+      message: null,
+      type: null,
+    },
   });
   const token = useSelector((state) => state.auth.token);
   const menu = useSelector((state) => state.menu);
@@ -117,6 +122,15 @@ const SettingMenu = () => {
   });
 
   const onSubmit = async (data) => {
+    setState({
+      ...state,
+      flash: {
+        ...state.flash,
+        message: null,
+        type: null,
+      },
+    });
+
     if (state.price < 1) {
       setError("price", {
         type: "manual",
@@ -138,7 +152,16 @@ const SettingMenu = () => {
 
           dispatch(actions.addMenuSuccess(menu.data));
 
-          setState({ ...state, price: null, show: !state.show });
+          setState({
+            ...state,
+            price: null,
+            show: !state.show,
+            flash: {
+              ...state.flash,
+              message: "Created menu succesful.",
+              type: "success",
+            },
+          });
         } catch (error) {
           dispatch(actions.addMenuFailure());
         }
@@ -155,7 +178,17 @@ const SettingMenu = () => {
 
           dispatch(actions.editMenuSuccess(menu.data));
 
-          setState({ ...state, price: null, menu: null, show: !state.show });
+          setState({
+            ...state,
+            price: null,
+            menu: null,
+            show: !state.show,
+            flash: {
+              ...state.flash,
+              message: "Updated menu succesful.",
+              type: null,
+            },
+          });
         } catch (error) {
           dispatch(actions.editMenuFailure());
         }
@@ -166,6 +199,15 @@ const SettingMenu = () => {
   };
 
   const onDelete = async () => {
+    setState({
+      ...state,
+      flash: {
+        ...state.flash,
+        message: null,
+        type: null,
+      },
+    });
+
     dispatch(actions.deleteMenuRequest());
 
     try {
@@ -178,7 +220,16 @@ const SettingMenu = () => {
 
       dispatch(actions.deleteMenuSuccess(state.menu));
 
-      setState({ ...state, category: null, delete: !state.delete });
+      setState({
+        ...state,
+        category: null,
+        delete: !state.delete,
+        flash: {
+          ...state.flash,
+          message: "Deleted menu succesful.",
+          type: "alert",
+        },
+      });
     } catch (error) {
       dispatch(actions.deleteMenuFailure());
     }
@@ -239,8 +290,14 @@ const SettingMenu = () => {
 
   return (
     <Main>
-      <div className="flex-1 flex flex-col px-8">
-        <div className="group flex items-center py-8">
+      <div className="flex-1 flex flex-col">
+        {state.flash.message && (
+          <FlashMessage duration={3000} persistOnHover={true}>
+            <Message type={state.flash.type}>{state.flash.message}</Message>
+          </FlashMessage>
+        )}
+
+        <div className="group flex items-center p-8">
           <Search className="text-gray-300 mr-2" size={20} />
 
           <input
@@ -254,7 +311,7 @@ const SettingMenu = () => {
           />
         </div>
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between px-8 mb-8">
           <div className="flex items-center">
             <button
               className="bg-gray-300 rounded-full p-2 mr-4"
@@ -274,7 +331,7 @@ const SettingMenu = () => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-8">
           <table className="w-full table-auto">
             <thead>
               <tr className="bg-gray-200">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import FlashMessage from "react-flash-message";
 import axios from "axios";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -9,7 +10,7 @@ import { Search, CornerUpLeft, Plus, Edit2, Trash } from "react-feather";
 
 import * as actions from "../../../redux/actions";
 import Main from "../../../layouts/main";
-import { Modal } from "../../../components";
+import { Modal, Message } from "../../../components";
 
 const schema = yup.object().shape({
   name: yup.string().required().max(255),
@@ -29,6 +30,10 @@ const SettingUser = () => {
     user: null,
     show: false,
     delete: false,
+    flash: {
+      message: null,
+      type: null,
+    },
   });
   const token = useSelector((state) => state.auth.token);
   const user = useSelector((state) => state.user);
@@ -97,6 +102,15 @@ const SettingUser = () => {
   });
 
   const onSubmit = async (data) => {
+    setState({
+      ...state,
+      flash: {
+        ...state.flash,
+        message: null,
+        type: null,
+      },
+    });
+
     if (!state.user) {
       try {
         dispatch(actions.addUserRequest());
@@ -110,7 +124,15 @@ const SettingUser = () => {
 
         dispatch(actions.addUserSuccess(user.data));
 
-        setState({ ...state, show: !state.show });
+        setState({
+          ...state,
+          show: !state.show,
+          flash: {
+            ...state.flash,
+            message: "Created user succesful.",
+            type: "success",
+          },
+        });
       } catch (error) {
         dispatch(actions.addUserFailure());
       }
@@ -127,7 +149,15 @@ const SettingUser = () => {
 
         dispatch(actions.editUserSuccess(user.data));
 
-        setState({ ...state, user: null, show: !state.show });
+        setState({
+          ...state,
+          show: !state.show,
+          flash: {
+            ...state.flash,
+            message: "Updated user succesful.",
+            type: null,
+          },
+        });
       } catch (error) {
         dispatch(actions.editUserFailure());
       }
@@ -137,6 +167,15 @@ const SettingUser = () => {
   };
 
   const onDelete = async () => {
+    setState({
+      ...state,
+      flash: {
+        ...state.flash,
+        message: null,
+        type: null,
+      },
+    });
+
     try {
       dispatch(actions.deleteUserRequest());
 
@@ -149,7 +188,15 @@ const SettingUser = () => {
 
       dispatch(actions.deleteUserSuccess(state.user));
 
-      setState({ ...state, user: null, delete: !state.delete });
+      setState({
+        ...state,
+        delete: !state.delete,
+        flash: {
+          ...state.flash,
+          message: "Deleted user succesful.",
+          type: "alert",
+        },
+      });
     } catch (error) {
       dispatch(actions.deleteUserFailure());
     }
@@ -174,14 +221,20 @@ const SettingUser = () => {
       },
     });
 
-    setState({ ...state, user: user.data, delete: !state.delete });
+    setState({ ...state, user: user.data, delete: !state.show });
   };
 
   return (
     token && (
       <Main>
-        <div className="flex-1 flex flex-col px-8">
-          <div className="group flex items-center py-8">
+        <div className="flex-1 flex flex-col">
+          {state.flash.message && (
+            <FlashMessage duration={3000} persistOnHover={true}>
+              <Message type={state.flash.type}>{state.flash.message}</Message>
+            </FlashMessage>
+          )}
+
+          <div className="group flex items-center p-8">
             <Search className="text-gray-300 mr-2" size={20} />
 
             <input
@@ -195,7 +248,7 @@ const SettingUser = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between px-8 mb-8">
             <div className="flex items-center">
               <button
                 className="bg-gray-300 rounded-full p-2 mr-4"
@@ -209,13 +262,15 @@ const SettingUser = () => {
 
             <button
               className="bg-gray-300 rounded-full p-2 mr-2"
-              onClick={() => setState({ ...state, show: !state.show })}
+              onClick={() =>
+                setState({ ...state, user: null, show: !state.show })
+              }
             >
               <Plus className="text-gray-800" size={20} />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-8">
             <table className="w-full table-auto">
               <thead>
                 <tr className="bg-gray-200">
