@@ -18,12 +18,6 @@ const Home = ({ match }) => {
   const cart = useSelector((state) => state.cart);
   const number = useSelector((state) => state.order.number);
   const category = useSelector((state) => state.category);
-  const transitions = useTransition(cart.menus, (menu) => menu.id, {
-    config: { mass: 1, tension: 500, friction: 50 },
-    from: { opacity: 0 },
-    enter: { opacity: 1 },
-    leave: { opacity: 0 },
-  });
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -77,24 +71,21 @@ const Home = ({ match }) => {
     dispatch(actions.deleteCart(menu));
   };
 
-  const categories = [];
-  category.categories.forEach((category, index) => {
-    categories.push(
-      <NavLink
-        key={index}
-        className="border rounded-lg group hover:bg-indigo-700 hover:border-indigo-700 px-4 py-2 mr-3"
-        activeClassName="text-white bg-indigo-700 border-indigo-700"
-        to={`/menu/${category.slug}`}
-      >
-        <div className="text-sm font-medium group-hover:text-white truncate">
-          {category.name}
-        </div>
-      </NavLink>
-    );
-  });
+  const categories = category.categories.map((category, index) => (
+    <NavLink
+      key={index}
+      className="border rounded-lg group hover:bg-indigo-700 hover:border-indigo-700 focus:outline-none px-4 py-2 mr-3"
+      activeClassName="text-white bg-indigo-700 border-indigo-700"
+      to={`/menu/${category.slug}`}
+    >
+      <div className="text-sm font-medium group-hover:text-white truncate">
+        {category.name}
+      </div>
+    </NavLink>
+  ));
 
   const menus = [];
-  menu.menus.forEach((menu, index) => {
+  menu.menus.forEach((menu) => {
     if (menu.name.toUpperCase().indexOf(state.search.toUpperCase()) === -1) {
       return;
     }
@@ -103,107 +94,132 @@ const Home = ({ match }) => {
       return;
     }
 
-    menus.push(
-      <button
-        key={index}
-        className={`relative flex overflow-hidden text-left items-center border-2 rounded-xl group ${
-          menu.stock
-            ? "hover:bg-indigo-700 hover:border-indigo-700"
-            : " pointer-events-none"
-        } p-4 mb-4`}
-        onClick={() => addToCartHandler(menu)}
-        disabled={!menu.stock}
-      >
-        <div
-          className={`w-24 h-24 flex items-center justify-center overflow-hidden bg-gray-400 rounded-xl mr-4 ${
-            menu.stock && "group-hover:bg-indigo-500"
-          }`}
-        >
-          <img
-            className="object-cover w-full text-gray-800 text-sm text-center font-medium"
-            src={menu.url}
-            alt={menu.name}
-          />
-        </div>
-        <div className="flex-1">
-          <p
-            className={`text-md text-gray-800 font-bold mb-1 ${
-              menu.stock && "group-hover:text-white"
-            }`}
-          >
-            {menu.name}
-          </p>
-
-          <p
-            className={`text-sm text-gray-600 mb-2 ${
-              menu.stock && "group-hover:text-gray-300"
-            }`}
-          >
-            {menu.description}
-          </p>
-
-          <p
-            className={`text-md text-gray-800 font-bold ${
-              menu.stock && "group-hover:text-white"
-            }`}
-          >
-            <NumberFormat
-              value={menu.price}
-              displayType={"text"}
-              thousandSeparator={true}
-              prefix={"Rp "}
-              renderText={(value) => value}
-            />
-          </p>
-        </div>
-
-        {!menu.stock && (
-          <div className="absolute inset-0 h-full w-full flex items-center justify-center bg-gray-400 opacity-25">
-            <h6 className="text-5xl text-gray-800 font-bold">NOT READY</h6>
-          </div>
-        )}
-      </button>
-    );
+    menus.push(menu);
   });
 
-  const carts = [];
-  cart.menus.forEach((menu, index) => {
-    carts.push(
-      <li key={index} className="flex items-center justify-between py-2">
-        <div className="w-2/5 flex items-center">
-          <div className="min-w-10 h-10 w-10 flex items-center justify-center overflow-hidden bg-gray-400 rounded-lg mr-2">
-            <img
-              className="object-cover w-full text-gray-800 text-xs text-center font-medium truncate"
-              src={menu.url}
-              alt={menu.name}
-            />
-          </div>
+  const transitionMenus = useTransition(menus, (menu) => menu.id, {
+    config: { mass: 1, tension: 500, friction: 50 },
+    from: { opacity: 0 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 },
+  });
 
-          <p className="text-sm text-gray-800 font-semibold truncate">
-            {menu.name}
-          </p>
-        </div>
+  const animationMenus = transitionMenus.map(({ item, props, key }) => (
+    <animated.button
+      key={key}
+      style={props}
+      className={`relative flex overflow-hidden text-left items-center border-2 rounded-xl group ${
+        item.stock
+          ? "hover:bg-indigo-700 hover:border-indigo-700"
+          : " pointer-events-none"
+      } focus:outline-none p-4 mb-4`}
+      onClick={() => addToCartHandler(item)}
+      disabled={!item.stock}
+    >
+      <div
+        className={`w-24 h-24 flex items-center justify-center overflow-hidden bg-gray-400 rounded-xl mr-4 ${
+          item.stock && "group-hover:bg-indigo-500"
+        }`}
+      >
+        {item.url && (
+          <img
+            className="object-cover w-full text-gray-800 text-sm text-center font-medium"
+            src={item.url}
+            alt={item.name}
+          />
+        )}
+      </div>
+      <div className="flex-1">
+        <p
+          className={`text-md text-gray-800 font-bold mb-1 ${
+            item.stock && "group-hover:text-white"
+          }`}
+        >
+          {item.name}
+        </p>
 
-        <div className="w-1/5 text-sm text-gray-600 text-center font-semibold">
-          {menu.quantity}x
-        </div>
+        <p
+          className={`text-sm text-gray-600 mb-2 ${
+            item.stock && "group-hover:text-gray-300"
+          }`}
+        >
+          {item.description}
+        </p>
 
-        <div className="w-2/5 flex items-center justify-end text-sm text-gray-600 text-right font-semibold">
+        <p
+          className={`text-md text-gray-800 font-bold ${
+            item.stock && "group-hover:text-white"
+          }`}
+        >
           <NumberFormat
-            value={menu.price}
+            value={item.price}
             displayType={"text"}
             thousandSeparator={true}
             prefix={"Rp "}
-            renderText={(value) => <span className="truncate">{value}</span>}
+            renderText={(value) => value}
           />
+        </p>
+      </div>
 
-          <button className="ml-4" onClick={() => deleteCartHandler(menu)}>
-            <Trash className="text-red-400" height={16} />
-          </button>
+      {!item.stock && (
+        <div className="absolute inset-0 h-full w-full flex items-center justify-center bg-gray-400 opacity-25">
+          <h6 className="text-5xl text-gray-800 font-bold">NOT READY</h6>
         </div>
-      </li>
-    );
+      )}
+    </animated.button>
+  ));
+
+  const transitionCarts = useTransition(cart.menus, (menu) => menu.id, {
+    config: { mass: 1, tension: 500, friction: 50 },
+    from: { opacity: 0 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 },
   });
+
+  const animationCarts = transitionCarts.map(({ item, props, key }) => (
+    <animated.li
+      key={key}
+      style={props}
+      className="flex items-center justify-between py-2"
+    >
+      <div className="w-2/5 flex items-center">
+        <div className="min-w-10 h-10 w-10 flex items-center justify-center overflow-hidden bg-gray-400 rounded-lg mr-2">
+          {item.url && (
+            <img
+              className="object-cover w-full text-gray-800 text-xs text-center font-medium truncate"
+              src={item.url}
+              alt={item.name}
+            />
+          )}
+        </div>
+
+        <p className="text-sm text-gray-800 font-semibold truncate">
+          {item.name}
+        </p>
+      </div>
+
+      <div className="w-1/5 text-sm text-gray-600 text-center font-semibold">
+        {item.quantity}x
+      </div>
+
+      <div className="w-2/5 flex items-center justify-end text-sm text-gray-600 text-right font-semibold">
+        <NumberFormat
+          value={item.price}
+          displayType={"text"}
+          thousandSeparator={true}
+          prefix={"Rp "}
+          renderText={(value) => <span className="truncate">{value}</span>}
+        />
+
+        <button
+          className="focus:outline-none ml-4"
+          onClick={() => deleteCartHandler(item)}
+        >
+          <Trash className="text-red-400" height={16} />
+        </button>
+      </div>
+    </animated.li>
+  ));
 
   return (
     <Main>
@@ -240,7 +256,9 @@ const Home = ({ match }) => {
 
         <h6 className="text-xl text-gray-800 font-bold mb-8">All Menu</h6>
 
-        <div className="flex-1 flex flex-col overflow-y-auto">{menus}</div>
+        <div className="flex-1 flex flex-col overflow-y-auto">
+          {animationMenus}
+        </div>
       </div>
 
       <div className="w-2/5 flex flex-col px-8">
@@ -262,50 +280,7 @@ const Home = ({ match }) => {
           </div>
 
           <ul className="flex-1 flex flex-col overflow-y-auto">
-            {transitions.map(({ item, props, key }) => (
-              <animated.li
-                key={key}
-                style={props}
-                className="flex items-center justify-between py-2"
-              >
-                <div className="w-2/5 flex items-center">
-                  <div className="min-w-10 h-10 w-10 flex items-center justify-center overflow-hidden bg-gray-400 rounded-lg mr-2">
-                    <img
-                      className="object-cover w-full text-gray-800 text-xs text-center font-medium truncate"
-                      src={item.url}
-                      alt={item.name}
-                    />
-                  </div>
-
-                  <p className="text-sm text-gray-800 font-semibold truncate">
-                    {item.name}
-                  </p>
-                </div>
-
-                <div className="w-1/5 text-sm text-gray-600 text-center font-semibold">
-                  {item.quantity}x
-                </div>
-
-                <div className="w-2/5 flex items-center justify-end text-sm text-gray-600 text-right font-semibold">
-                  <NumberFormat
-                    value={item.price}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"Rp "}
-                    renderText={(value) => (
-                      <span className="truncate">{value}</span>
-                    )}
-                  />
-
-                  <button
-                    className="ml-4"
-                    onClick={() => deleteCartHandler(item)}
-                  >
-                    <Trash className="text-red-400" height={16} />
-                  </button>
-                </div>
-              </animated.li>
-            ))}
+            {animationCarts}
           </ul>
 
           <div className="flex flex-col py-2">
