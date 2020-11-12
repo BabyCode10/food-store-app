@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink, Link } from "react-router-dom";
 import { Search, Trash } from "react-feather";
+import { useTransition, animated } from "react-spring";
 import NumberFormat from "react-number-format";
 import axios from "axios";
 import Main from "../../layouts/main";
@@ -17,6 +18,12 @@ const Home = ({ match }) => {
   const cart = useSelector((state) => state.cart);
   const number = useSelector((state) => state.order.number);
   const category = useSelector((state) => state.category);
+  const transitions = useTransition(cart.menus, (menu) => menu.id, {
+    config: { mass: 1, tension: 500, friction: 50 },
+    from: { opacity: 0 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 },
+  });
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -96,63 +103,50 @@ const Home = ({ match }) => {
       return;
     }
 
-    if (!menu.stock) {
-      menus.push(
-        <div
-          key={index}
-          className="relative flex items-center overflow-hidden text-left border-2 rounded-xl p-4 mb-4"
-        >
-          <div className="w-24 h-24 bg-gray-400 rounded-xl mr-4"></div>
-
-          <div className="flex-1">
-            <p className="text-md text-gray-800 font-bold mb-1">{menu.name}</p>
-
-            <p className="text-sm text-gray-600 mb-2">{menu.description}</p>
-
-            <p className="text-md text-gray-800 font-bold">
-              <NumberFormat
-                value={menu.price}
-                displayType={"text"}
-                thousandSeparator={true}
-                prefix={"Rp "}
-                renderText={(value) => value}
-              />
-            </p>
-          </div>
-
-          <div className="absolute inset-0 h-full w-full flex items-center justify-center bg-gray-400 opacity-25">
-            <h6 className="text-5xl text-gray-800 font-bold">NOT READY</h6>
-          </div>
-        </div>
-      );
-
-      return;
-    }
-
     menus.push(
       <button
         key={index}
-        className="flex text-left items-center border-2 rounded-xl group hover:bg-indigo-700 hover:border-indigo-700 p-4 mb-4"
+        className={`relative flex overflow-hidden text-left items-center border-2 rounded-xl group ${
+          menu.stock
+            ? "hover:bg-indigo-700 hover:border-indigo-700"
+            : " pointer-events-none"
+        } p-4 mb-4`}
         onClick={() => addToCartHandler(menu)}
+        disabled={!menu.stock}
       >
-        <div className="w-24 h-24 flex items-center justify-center overflow-hidden bg-gray-400 rounded-xl mr-4 group-hover:bg-indigo-500">
+        <div
+          className={`w-24 h-24 flex items-center justify-center overflow-hidden bg-gray-400 rounded-xl mr-4 ${
+            menu.stock && "group-hover:bg-indigo-500"
+          }`}
+        >
           <img
             className="object-cover w-full text-gray-800 text-sm text-center font-medium"
             src={menu.url}
             alt={menu.name}
           />
         </div>
-
         <div className="flex-1">
-          <p className="text-md text-gray-800 font-bold mb-1 group-hover:text-white">
+          <p
+            className={`text-md text-gray-800 font-bold mb-1 ${
+              menu.stock && "group-hover:text-white"
+            }`}
+          >
             {menu.name}
           </p>
 
-          <p className="text-sm text-gray-600 mb-2 group-hover:text-gray-300">
+          <p
+            className={`text-sm text-gray-600 mb-2 ${
+              menu.stock && "group-hover:text-gray-300"
+            }`}
+          >
             {menu.description}
           </p>
 
-          <p className="text-md text-gray-800 font-bold group-hover:text-white">
+          <p
+            className={`text-md text-gray-800 font-bold ${
+              menu.stock && "group-hover:text-white"
+            }`}
+          >
             <NumberFormat
               value={menu.price}
               displayType={"text"}
@@ -162,6 +156,12 @@ const Home = ({ match }) => {
             />
           </p>
         </div>
+
+        {!menu.stock && (
+          <div className="absolute inset-0 h-full w-full flex items-center justify-center bg-gray-400 opacity-25">
+            <h6 className="text-5xl text-gray-800 font-bold">NOT READY</h6>
+          </div>
+        )}
       </button>
     );
   });
@@ -261,7 +261,52 @@ const Home = ({ match }) => {
             </div>
           </div>
 
-          <ul className="flex-1 flex flex-col overflow-y-auto">{carts}</ul>
+          <ul className="flex-1 flex flex-col overflow-y-auto">
+            {transitions.map(({ item, props, key }) => (
+              <animated.li
+                key={key}
+                style={props}
+                className="flex items-center justify-between py-2"
+              >
+                <div className="w-2/5 flex items-center">
+                  <div className="min-w-10 h-10 w-10 flex items-center justify-center overflow-hidden bg-gray-400 rounded-lg mr-2">
+                    <img
+                      className="object-cover w-full text-gray-800 text-xs text-center font-medium truncate"
+                      src={item.url}
+                      alt={item.name}
+                    />
+                  </div>
+
+                  <p className="text-sm text-gray-800 font-semibold truncate">
+                    {item.name}
+                  </p>
+                </div>
+
+                <div className="w-1/5 text-sm text-gray-600 text-center font-semibold">
+                  {item.quantity}x
+                </div>
+
+                <div className="w-2/5 flex items-center justify-end text-sm text-gray-600 text-right font-semibold">
+                  <NumberFormat
+                    value={item.price}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"Rp "}
+                    renderText={(value) => (
+                      <span className="truncate">{value}</span>
+                    )}
+                  />
+
+                  <button
+                    className="ml-4"
+                    onClick={() => deleteCartHandler(item)}
+                  >
+                    <Trash className="text-red-400" height={16} />
+                  </button>
+                </div>
+              </animated.li>
+            ))}
+          </ul>
 
           <div className="flex flex-col py-2">
             <ul className="mb-8">
