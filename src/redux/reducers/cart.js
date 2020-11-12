@@ -11,7 +11,7 @@ const initialState = {
 const fetchCart = (state) => {
   const cart = JSON.parse(localStorage.getItem("cart"));
 
-  return cart;
+  return cart || state;
 };
 
 const addCart = (state, action) => {
