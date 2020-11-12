@@ -23,7 +23,7 @@ import { Modal, Message } from "../../../components";
 const schema = yup.object().shape({
   name: yup.string().required().max(255),
   description: yup.string().required(),
-  url: yup.string().required().max(255),
+  url: yup.string().max(255),
   category_id: yup.string().required(),
   price: yup.string().required(),
   stock: yup.boolean().required(),
