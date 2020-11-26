@@ -4,13 +4,15 @@ import { useHistory, useParams } from "react-router-dom";
 import NumberFormat from "react-number-format";
 import Main from "../../layouts/main";
 import { Search, Minus, ChevronDown, Calendar, Filter } from "react-feather";
+import moment from "moment";
+
 import * as actions from "../../redux/actions";
 
 const Order = () => {
   const [state, setState] = useState({
     search: "",
     activeIndex: null,
-    date: null,
+    date: moment().format('Y-M-D'),
   });
   const history = useHistory();
   let { date } = useParams();
@@ -123,7 +125,7 @@ const Order = () => {
               className={
                 (state.activeIndex === order.id
                   ? "bg-indigo-600 text-gray-300"
-                  : "bg-gray-400 text-gray-500") + " rounded-lg p-1"
+                  : "bg-gray-400 text-gray-500") + " rounded-lg focus:outline-none p-1"
               }
               onClick={() => onCollapseHandle(order.id)}
             >
@@ -275,7 +277,7 @@ const Order = () => {
             </div>
 
             <button
-              className="text-white bg-indigo-700 rounded-lg p-2"
+              className="text-white bg-indigo-700 rounded-lg focus:outline-none p-2"
               type="submit"
             >
               <Filter size={16} />

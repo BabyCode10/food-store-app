@@ -8,6 +8,10 @@ const fetchMenu = (state, action) => {
   return { ...state, menus: action.menus };
 };
 
+const searchMenu = (state, action) => {
+  return { ...state, menus: action.menus };
+};
+
 const addMenu = (state, action) => {
   return { ...state, menus: [...state.menus, action.menu] };
 };
@@ -34,6 +38,8 @@ const reducers = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.FETCH_MENU_SUCCESS:
       return fetchMenu(state, action);
+    case actionTypes.SEARCH_MENU_SUCCESS:
+      return searchMenu(state, action);
     case actionTypes.ADD_MENU_SUCCESS:
       return addMenu(state, action);
     case actionTypes.EDIT_MENU_SUCCESS:

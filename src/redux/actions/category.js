@@ -6,10 +6,10 @@ export const fetchCategoryRequest = () => {
   };
 };
 
-export const fetchCategorySuccess = (data) => {
+export const fetchCategorySuccess = (categories) => {
   return {
     type: actionTypes.FETCH_CATEGORY_SUCCESS,
-    data: data,
+    categories: categories,
   };
 };
 
@@ -19,16 +19,35 @@ export const fetchCategoryFailure = () => {
   };
 };
 
+export const searchCategoryRequest = () => {
+  return {
+    type: actionTypes.SEARCH_CATEGORY_REQUEST,
+  };
+};
+
+export const searchCategorySuccess = (categories) => {
+  return {
+    type: actionTypes.SEARCH_CATEGORY_SUCCESS,
+    categories: categories,
+  };
+};
+
+export const searchCategoryFailure = () => {
+  return {
+    type: actionTypes.SEARCH_CATEGORY_FAILURE,
+  };
+};
+
 export const addCategoryRequest = () => {
   return {
     type: actionTypes.ADD_CATEGORY_REQUEST,
   };
 };
 
-export const addCategorySuccess = (data) => {
+export const addCategorySuccess = (category) => {
   return {
     type: actionTypes.ADD_CATEGORY_SUCCESS,
-    data: data,
+    category: category,
   };
 };
 
@@ -44,10 +63,10 @@ export const editCategoryRequest = () => {
   };
 };
 
-export const editCategorySuccess = (data) => {
+export const editCategorySuccess = (category) => {
   return {
     type: actionTypes.EDIT_CATEGORY_SUCCESS,
-    data: data,
+    category: category,
   };
 };
 
@@ -63,10 +82,10 @@ export const deleteCategoryRequest = () => {
   };
 };
 
-export const deleteCategorySuccess = (data) => {
+export const deleteCategorySuccess = (category) => {
   return {
     type: actionTypes.DELETE_CATEGORY_SUCCESS,
-    data: data,
+    category: category,
   };
 };
 

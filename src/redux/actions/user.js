@@ -6,10 +6,10 @@ export const fetchUserRequest = () => {
   };
 };
 
-export const fetchUserSuccess = (data) => {
+export const fetchUserSuccess = (users) => {
   return {
     type: actionTypes.FETCH_USER_SUCCESS,
-    data: data,
+    users: users,
   };
 };
 
@@ -19,16 +19,35 @@ export const fetchUserFailure = () => {
   };
 };
 
+export const searchUserRequest = () => {
+  return {
+    type: actionTypes.SEARCH_USER_REQUEST,
+  };
+};
+
+export const searchUserSuccess = (users) => {
+  return {
+    type: actionTypes.SEARCH_USER_SUCCESS,
+    users: users,
+  };
+};
+
+export const searchUserFailure = () => {
+  return {
+    type: actionTypes.SEARCH_USER_FAILURE,
+  };
+};
+
 export const addUserRequest = () => {
   return {
     type: actionTypes.ADD_USER_REQUEST,
   };
 };
 
-export const addUserSuccess = (data) => {
+export const addUserSuccess = (user) => {
   return {
     type: actionTypes.ADD_USER_SUCCESS,
-    data: data,
+    user: user,
   };
 };
 
@@ -44,10 +63,10 @@ export const editUserRequest = () => {
   };
 };
 
-export const editUserSuccess = (data) => {
+export const editUserSuccess = (user) => {
   return {
     type: actionTypes.EDIT_USER_SUCCESS,
-    data: data,
+    user: user,
   };
 };
 
@@ -63,10 +82,10 @@ export const deleteUserRequest = () => {
   };
 };
 
-export const deleteUserSuccess = (data) => {
+export const deleteUserSuccess = (user) => {
   return {
     type: actionTypes.DELETE_USER_SUCCESS,
-    data: data,
+    user: user,
   };
 };
 

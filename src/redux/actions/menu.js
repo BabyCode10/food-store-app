@@ -19,6 +19,25 @@ export const fetchMenuFailure = () => {
   };
 };
 
+export const searchMenuRequest = () => {
+  return {
+    type: actionTypes.SEARCH_MENU_REQUEST,
+  };
+};
+
+export const searchMenuSuccess = (menus) => {
+  return {
+    type: actionTypes.SEARCH_MENU_SUCCESS,
+    menus: menus,
+  };
+};
+
+export const searchMenuFailure = () => {
+  return {
+    type: actionTypes.SEARCH_MENU_FAILURE,
+  };
+};
+
 export const addMenuRequest = () => {
   return {
     type: actionTypes.ADD_MENU_REQUEST,

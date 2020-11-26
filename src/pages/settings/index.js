@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Main from "../../layouts/main";
 import { Search } from "react-feather";
 
 const Settings = () => {
   const [search, setSearch] = useState("");
-  const menus = [
-    { label: "Menu", link: "menu" },
-    { label: "Category", link: "category" },
-    { label: "User", link: "user" },
-  ];
+  const menus = useMemo(
+    () => [
+      { label: "Menu", link: "menu" },
+      { label: "Category", link: "category" },
+      { label: "User", link: "user" },
+    ],
+    []
+  );
 
   const settings = [];
   menus.forEach((menu, index) => {

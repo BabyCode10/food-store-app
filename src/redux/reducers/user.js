@@ -5,23 +5,24 @@ const initialState = {
 };
 
 const fetchUser = (state, action) => {
-  return {
-    ...state,
-    users: action.data,
-  };
+  return { ...state, users: action.users };
+};
+
+const searchUser = (state, action) => {
+  return { ...state, users: action.users };
 };
 
 const addUser = (state, action) => {
   return {
     ...state,
-    users: [...state.users, action.data],
+    users: [...state.users, action.user],
   };
 };
 
 const editUser = (state, action) => {
   const newUsers = state.users.map((user) => {
-    if (user.id === action.data.id) {
-      return action.data;
+    if (user.id === action.user.id) {
+      return action.user;
     }
 
     return user;
@@ -31,7 +32,7 @@ const editUser = (state, action) => {
 };
 
 const deleteUser = (state, action) => {
-  const newUser = state.users.filter((user) => user.id !== action.data.id);
+  const newUser = state.users.filter((user) => user.id !== action.user.id);
 
   return { ...state, users: newUser };
 };
@@ -40,6 +41,8 @@ const reducers = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.FETCH_USER_SUCCESS:
       return fetchUser(state, action);
+    case actionTypes.SEARCH_USER_SUCCESS:
+      return searchUser(state, action);
     case actionTypes.ADD_USER_SUCCESS:
       return addUser(state, action);
     case actionTypes.EDIT_USER_SUCCESS:

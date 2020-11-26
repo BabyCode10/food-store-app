@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import NumberFormat from "react-number-format";
-import FlashMessage from "react-flash-message";
 import axios from "axios";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -15,6 +14,8 @@ import {
   Trash,
   ChevronDown,
 } from "react-feather";
+import { useTransition } from "react-spring";
+import { useTable } from "react-table";
 
 import * as actions from "../../../redux/actions";
 import Main from "../../../layouts/main";
@@ -30,18 +31,18 @@ const schema = yup.object().shape({
 });
 
 const SettingMenu = () => {
+  const [flash, setFlash] = useState({
+    message: null,
+    type: null,
+  });
   const [state, setState] = useState({
     search: "",
     price: null,
     categories: [],
-    menus: [],
     menu: null,
-    show: false,
+    add: false,
+    edit: false,
     delete: false,
-    flash: {
-      message: null,
-      type: null,
-    },
   });
   const token = useSelector((state) => state.auth.token);
   const menu = useSelector((state) => state.menu);
@@ -51,20 +52,29 @@ const SettingMenu = () => {
   });
   let { handleSubmit: handleDelete } = useForm();
   let history = useHistory();
+  const configTransition = {
+    config: { mass: 1, tension: 500, friction: 50 },
+    from: { opacity: 0 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 },
+  };
+  const transitionsAdd = useTransition(state.add, null, configTransition);
+  const transitionsEdit = useTransition(state.edit, null, configTransition);
+  const transitionsDelete = useTransition(state.delete, null, configTransition);
 
   useEffect(() => {
     const fetchMenu = async () => {
       dispatch(actions.fetchMenuRequest());
 
       try {
-        const menus = await axios.get("/menu", {
+        const response = await axios.get("/menu", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
 
-        dispatch(actions.fetchMenuSuccess(menus.data));
+        dispatch(actions.fetchMenuSuccess(response.data));
       } catch (error) {
         dispatch(actions.fetchMenuFailure());
       }
@@ -73,64 +83,45 @@ const SettingMenu = () => {
     fetchMenu();
   }, [token, dispatch]);
 
-  const menus = [];
-  menu.menus.forEach((menu, index) => {
-    if (menu.name.toUpperCase().indexOf(state.search.toUpperCase()) === -1) {
-      return;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFlash({ ...flash, message: null });
+    }, 5000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [flash]);
+
+  const onSearch = (event) => {
+    if (event.key === "Enter") {
+      const searchMenu = async () => {
+        dispatch(actions.searchMenuRequest());
+
+        try {
+          const response = await axios.get("/menu/search", {
+            params: {
+              search: event.target.value,
+            },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log(response.data);
+
+          dispatch(actions.searchMenuSuccess(response.data));
+        } catch (error) {
+          dispatch(actions.searchMenuFailure());
+        }
+      };
+
+      searchMenu();
     }
+  };
 
-    menus.push(
-      <tr key={index}>
-        <td className="border text-gray-800 text-sm text-center font-medium py-3">
-          {index + 1}.
-        </td>
-        <td className="border text-gray-800 text-sm font-medium px-4 py-3">
-          {menu.name} <br />{" "}
-          <span className="text-indigo-800">{menu.category.name}</span>
-        </td>
-        <td className="border text-gray-800 text-sm text-center font-medium px-4 py-3">
-          <NumberFormat
-            value={menu.price}
-            displayType={"text"}
-            thousandSeparator={true}
-            prefix={"Rp "}
-            renderText={(value) => value}
-          />
-        </td>
-        <td className="border text-gray-800 text-sm text-center font-medium px-4 py-3">
-          {menu.stock ? "Ready" : "Not Ready"}
-        </td>
-        <td className="border text-gray-800 text-sm text-center font-medium px-4 py-3">
-          <div className="flex items-center justify-center">
-            <button
-              className="bg-gray-300 rounded-full p-2 mr-2"
-              onClick={() => onShowMenu(menu.id)}
-            >
-              <Edit2 className="text-gray-800" size={20} />
-            </button>
-
-            <button
-              className="bg-gray-300 rounded-full p-2 mr-2"
-              onClick={() => onDeleteMenu(menu.id)}
-            >
-              <Trash className="text-gray-800" size={20} />
-            </button>
-          </div>
-        </td>
-      </tr>
-    );
-  });
-
-  const onSubmit = async (data) => {
-    setState({
-      ...state,
-      flash: {
-        ...state.flash,
-        message: null,
-        type: null,
-      },
-    });
-
+  const onSubmitAdd = async (data) => {
     if (state.price < 1) {
       setError("price", {
         type: "manual",
@@ -139,75 +130,74 @@ const SettingMenu = () => {
     } else {
       data.price = state.price;
 
-      if (!state.menu) {
-        dispatch(actions.addMenuRequest());
+      try {
+        const response = await axios.post("/menu", data, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        try {
-          const menu = await axios.post("/menu", data, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
+        dispatch(actions.addMenuSuccess(response.data));
 
-          dispatch(actions.addMenuSuccess(menu.data));
+        setFlash({
+          ...flash,
+          message: "Created menu succesful.",
+          type: "success",
+        });
 
-          setState({
-            ...state,
-            price: null,
-            show: !state.show,
-            flash: {
-              ...state.flash,
-              message: "Created menu succesful.",
-              type: "success",
-            },
-          });
-        } catch (error) {
-          dispatch(actions.addMenuFailure());
-        }
-      } else {
-        dispatch(actions.editMenuRequest());
-
-        try {
-          const menu = await axios.put(`/menu/${state.menu.id}`, data, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          dispatch(actions.editMenuSuccess(menu.data));
-
-          setState({
-            ...state,
-            price: null,
-            menu: null,
-            show: !state.show,
-            flash: {
-              ...state.flash,
-              message: "Updated menu succesful.",
-              type: null,
-            },
-          });
-        } catch (error) {
-          dispatch(actions.editMenuFailure());
-        }
+        setState({
+          ...state,
+          add: false,
+        });
+      } catch (error) {
+        dispatch(actions.addMenuFailure());
       }
-
-      reset();
     }
+
+    reset();
   };
 
-  const onDelete = async () => {
-    setState({
-      ...state,
-      flash: {
-        ...state.flash,
-        message: null,
-        type: null,
-      },
-    });
+  const onSubmitEdit = async (data) => {
+    if (state.price < 1) {
+      setError("price", {
+        type: "manual",
+        message: "price must be more than 0",
+      });
+    } else {
+      data.price = state.price;
 
+      dispatch(actions.editMenuRequest());
+
+      try {
+        const response = await axios.put(`/menu/${state.menu.id}`, data, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        dispatch(actions.editMenuSuccess(response.data));
+
+        setFlash({
+          ...flash,
+          message: "Updated menu succesful.",
+          type: null,
+        });
+
+        setState({
+          ...state,
+          edit: false,
+        });
+      } catch (error) {
+        dispatch(actions.editMenuFailure());
+      }
+    }
+
+    reset();
+  };
+
+  const onSubmitDelete = async () => {
     dispatch(actions.deleteMenuRequest());
 
     try {
@@ -220,15 +210,15 @@ const SettingMenu = () => {
 
       dispatch(actions.deleteMenuSuccess(state.menu));
 
+      setFlash({
+        ...flash,
+        message: "Deleted menu succesful.",
+        type: "alert",
+      });
+
       setState({
         ...state,
-        category: null,
-        delete: !state.delete,
-        flash: {
-          ...state.flash,
-          message: "Deleted menu succesful.",
-          type: "alert",
-        },
+        delete: false,
       });
     } catch (error) {
       dispatch(actions.deleteMenuFailure());
@@ -236,66 +226,167 @@ const SettingMenu = () => {
   };
 
   const getCategories = async () => {
-    const categories = await axios.get("/category", {
+    const response = await axios.get("/category", {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
 
-    return categories;
+    return response;
   };
 
-  const onCreateMenu = async () => {
-    const categories = await getCategories();
+  const onAddMenu = async () => {
+    const response = await getCategories();
 
     setState({
       ...state,
-      price: null,
+      categories: response.data,
       menu: null,
-      categories: categories.data,
-      show: !state.show,
+      add: true,
     });
   };
 
-  const onShowMenu = async (id) => {
-    const menu = await axios.get(`/menu/${id}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+  const data = useMemo(() => menu.menus, [menu.menus]);
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: "No",
+        accessor: "no",
+        className: "w-16 border text-gray-800 text-md font-semibold px-4 py-3",
+        align: "text-center",
+        Cell: (row) => row.row.index + 1,
       },
-    });
-
-    const categories = await getCategories();
-
-    setState({
-      ...state,
-      price: menu.data.price,
-      menu: menu.data,
-      categories: categories.data,
-      show: !state.show,
-    });
-  };
-
-  const onDeleteMenu = async (id) => {
-    const menu = await axios.get(`/menu/${id}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+      {
+        Header: "Name",
+        accessor: "name",
+        className:
+          "border text-gray-800 text-md text-left font-semibold px-4 py-3",
+        align: "text-left",
+        Cell: (row) => (
+          <>
+            {row.row.original.name} <br />{" "}
+            <span className="text-indigo-800">
+              {row.row.original.category.name}
+            </span>
+          </>
+        ),
       },
-    });
+      {
+        Header: "Price",
+        accessor: "price",
+        className: "border text-gray-800 text-md font-semibold px-4 py-3",
+        align: "text-center",
+        Cell: (row) => (
+          <>
+            <NumberFormat
+              value={row.row.original.price}
+              displayType={"text"}
+              thousandSeparator={true}
+              prefix={"Rp "}
+              renderText={(value) => value}
+            />
+          </>
+        ),
+      },
+      {
+        Header: "Stock",
+        accessor: "stock",
+        className: "border text-gray-800 text-md font-semibold px-4 py-3",
+        align: "text-center",
+        Cell: (row) => <>{row.row.original.stock ? "Ready" : "Not Ready"}</>,
+      },
+      {
+        Header: "Action",
+        accessor: "action",
+        className: "w-24 border text-gray-800 text-md font-semibold px-4 py-3",
+        Cell: (row) => {
+          const getMenu = async (id) => {
+            const response = await axios.get(`/menu/${id}`, {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
-    setState({ ...state, menu: menu.data, delete: !state.delete });
-  };
+            return response;
+          };
+
+          const getCategories = async () => {
+            const response = await axios.get("/category", {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            return response;
+          };
+
+          const onShowMenu = async (id) => {
+            const responseMenu = await getMenu(id);
+            const responseCategory = await getCategories();
+
+            setState({
+              ...state,
+              price: responseMenu.data.price,
+              menu: responseMenu.data,
+              categories: responseCategory.data,
+              edit: true,
+            });
+          };
+
+          const onDeleteMenu = async (id) => {
+            const responseMenu = await getMenu(id);
+            const responseCategory = await getCategories();
+
+            setState({
+              ...state,
+              price: responseMenu.data.price,
+              menu: responseMenu.data,
+              categories: responseCategory.data,
+              delete: true,
+            });
+          };
+
+          return (
+            <div className="flex items-center justify-center">
+              <button
+                className="bg-gray-300 rounded-full focus:outline-none p-2 mr-2"
+                onClick={() => onShowMenu(row.row.original.id)}
+              >
+                <Edit2 className="text-gray-800" size={20} />
+              </button>
+
+              <button
+                className="bg-gray-300 rounded-full focus:outline-none p-2"
+                onClick={() => onDeleteMenu(row.row.original.id)}
+              >
+                <Trash className="text-gray-800" size={20} />
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    [state, token]
+  );
+
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable({ columns, data });
 
   return (
     <Main>
-      <div className="flex-1 flex flex-col">
-        {state.flash.message && (
-          <FlashMessage duration={3000} persistOnHover={true}>
-            <Message type={state.flash.type}>{state.flash.message}</Message>
-          </FlashMessage>
-        )}
+      <div className="relative flex-1 flex flex-col">
+        <Message show={flash?.message} type={flash?.type}>
+          {flash?.message}
+        </Message>
 
         <div className="group flex items-center p-8">
           <Search className="text-gray-300 mr-2" size={20} />
@@ -308,13 +399,14 @@ const SettingMenu = () => {
               setState({ ...state, search: event.target.value })
             }
             value={state.search}
+            onKeyDown={onSearch}
           />
         </div>
 
         <div className="flex items-center justify-between px-8 mb-8">
           <div className="flex items-center">
             <button
-              className="bg-gray-300 rounded-full p-2 mr-4"
+              className="bg-gray-300 rounded-full focus:outline-none p-2 mr-4"
               onClick={() => history.goBack()}
             >
               <CornerUpLeft className="text-gray-800" size={20} />
@@ -324,264 +416,458 @@ const SettingMenu = () => {
           </div>
 
           <button
-            className="bg-gray-300 rounded-full p-2 mr-2"
-            onClick={() => onCreateMenu()}
+            className="bg-gray-300 rounded-full focus:outline-none p-2 mr-2"
+            onClick={() => onAddMenu()}
           >
             <Plus className="text-gray-800" size={20} />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-8">
-          <table className="w-full table-auto">
+          <table {...getTableProps()} className="w-full table-auto">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border text-gray-800 text-md font-semibold py-3">
-                  No
-                </th>
-                <th className="border text-left text-gray-800 text-md font-semibold px-4 py-3">
-                  Name
-                </th>
-                <th className="border text-gray-800 text-md font-semibold px-4 py-3">
-                  Price
-                </th>
-                <th className="border text-gray-800 text-md font-semibold px-4 py-3">
-                  Stock
-                </th>
-                <th className="border text-gray-800 text-md font-semibold px-4 py-3">
-                  Action
-                </th>
-              </tr>
+              {headerGroups.map((headerGroup) => (
+                <tr
+                  {...headerGroup.getHeaderGroupProps()}
+                  className="bg-gray-200"
+                >
+                  {headerGroup.headers.map((column) => (
+                    <th
+                      {...column.getHeaderProps()}
+                      className={column.className}
+                    >
+                      {column.render("Header")}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
 
-            <tbody>
-              {menus.length > 0 ? (
-                menus
-              ) : (
-                <tr>
-                  <td
-                    className="border text-gray-800 text-sm text-center font-medium py-3"
-                    colSpan={5}
-                  >
-                    No Data
-                  </td>
-                </tr>
-              )}
+            <tbody {...getTableBodyProps()}>
+              {rows.map((row) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()}>
+                    {row.cells.map((cell) => {
+                      return (
+                        <td
+                          {...cell.getCellProps()}
+                          className={`border text-gray-800 text-sm ${cell.column.align} font-medium px-4 py-3`}
+                        >
+                          {cell.render("Cell")}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      <Modal
-        show={state.show}
-        onShow={() => setState({ ...state, show: !state.show })}
-      >
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="text-xl text-gray-800 mb-4">
-            {state.menu ? "Edit menu" : "Add menu"}
-          </div>
+      {transitionsAdd.map(
+        ({ item, key, props: style }) =>
+          item && (
+            <Modal
+              key={key}
+              style={style}
+              show={state.add}
+              onShow={() => setState({ ...state, add: false })}
+            >
+              <form onSubmit={handleSubmit(onSubmitAdd)}>
+                <div className="text-xl text-gray-800 mb-4">Add menu</div>
 
-          <div className="mb-8">
-            <div className="flex flex-col mb-4">
-              <input
-                className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
-                name="name"
-                type="text"
-                placeholder="Name"
-                defaultValue={state.menu && state.menu.name}
-                ref={register}
-              />
+                <div className="mb-8">
+                  <div className="flex flex-col mb-4">
+                    <input
+                      className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+                      name="name"
+                      type="text"
+                      placeholder="Name"
+                      defaultValue=""
+                      ref={register}
+                    />
 
-              {errors.name && (
-                <span className="text-sm text-red-400 text-center">
-                  {errors.name?.message}
-                </span>
-              )}
-            </div>
+                    {errors.name && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.name?.message}
+                      </span>
+                    )}
+                  </div>
 
-            <div className="flex flex-col mb-4">
-              <textarea
-                className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
-                name="description"
-                placeholder="Description"
-                ref={register}
-                defaultValue={state.menu && state.menu.description}
-              ></textarea>
+                  <div className="flex flex-col mb-4">
+                    <textarea
+                      className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+                      name="description"
+                      placeholder="Description"
+                      ref={register}
+                      defaultValue=""
+                    ></textarea>
 
-              {errors.description && (
-                <span className="text-sm text-red-400 text-center">
-                  {errors.description?.message}
-                </span>
-              )}
-            </div>
+                    {errors.description && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.description?.message}
+                      </span>
+                    )}
+                  </div>
 
-            <div className="flex flex-col mb-4">
-              <input
-                className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
-                name="url"
-                type="text"
-                placeholder="Url Image"
-                defaultValue={state.menu && state.menu.url}
-                ref={register}
-              />
+                  <div className="flex flex-col mb-4">
+                    <input
+                      className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+                      name="url"
+                      type="text"
+                      placeholder="Url Image"
+                      defaultValue=""
+                      ref={register}
+                    />
 
-              {errors.url && (
-                <span className="text-sm text-red-400 text-center">
-                  {errors.url?.message}
-                </span>
-              )}
-            </div>
+                    {errors.url && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.url?.message}
+                      </span>
+                    )}
+                  </div>
 
-            <div className="flex flex-col mb-4">
-              <div className="relative">
-                <select
-                  className="w-full appearance-none text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline:none p-3"
-                  name="category_id"
-                  defaultValue={state.menu && state.menu.category.id}
-                  ref={register}
+                  <div className="flex flex-col mb-4">
+                    <div className="relative">
+                      <select
+                        className="w-full appearance-none text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline:none p-3"
+                        name="category_id"
+                        ref={register}
+                      >
+                        <option value="">Select category</option>
+
+                        {state.categories.map((category, index) => (
+                          <option key={index} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                        <ChevronDown className="text-gray-800" size={20} />
+                      </div>
+                    </div>
+
+                    {errors.category_id && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.category_id?.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col mb-4">
+                    <NumberFormat
+                      className="text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+                      name="price"
+                      placeholder="Price"
+                      thousandSeparator={true}
+                      prefix={"Rp "}
+                      getInputRef={register}
+                      onValueChange={(values) => {
+                        const { value } = values;
+
+                        setState({ ...state, price: value });
+                      }}
+                      defaultValue=""
+                    />
+
+                    {errors.price && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.price?.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col mb-4">
+                    <div className="flex items-center justify-center">
+                      <div className="mr-8">
+                        <input
+                          className="mr-4"
+                          name="stock"
+                          type="radio"
+                          value="true"
+                          ref={register}
+                        />
+
+                        <label className="text-sm text-gray-800 font-medium">
+                          Ready
+                        </label>
+                      </div>
+
+                      <div className="mr-8">
+                        <input
+                          className="mr-4"
+                          name="stock"
+                          type="radio"
+                          value="false"
+                          ref={register}
+                        />
+
+                        <label className="text-sm text-gray-800 font-medium">
+                          Not Ready
+                        </label>
+                      </div>
+                    </div>
+
+                    {errors.stock && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.stock?.message}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end">
+                  <button
+                    className="text-sm text-white bg-indigo-700 rounded-lg focus:outline-none px-8 py-2"
+                    type="submit"
+                  >
+                    Save
+                  </button>
+
+                  <button
+                    className="text-sm text-gray-800 focus:outline-none px-8 py-2"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setState({ ...state, add: false });
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </Modal>
+          )
+      )}
+
+      {transitionsEdit.map(
+        ({ item, key, props: style }) =>
+          item && (
+            <Modal
+              key={key}
+              style={style}
+              show={state.edit}
+              onShow={() => setState({ ...state, edit: false })}
+            >
+              <form onSubmit={handleSubmit(onSubmitEdit)}>
+                <div className="text-xl text-gray-800 mb-4">Edit menu</div>
+
+                <div className="mb-8">
+                  <div className="flex flex-col mb-4">
+                    <input
+                      className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+                      name="name"
+                      type="text"
+                      placeholder="Name"
+                      defaultValue={state.menu?.name}
+                      ref={register}
+                    />
+
+                    {errors.name && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.name?.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col mb-4">
+                    <textarea
+                      className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+                      name="description"
+                      placeholder="Description"
+                      ref={register}
+                      defaultValue={state.menu?.description}
+                    ></textarea>
+
+                    {errors.description && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.description?.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col mb-4">
+                    <input
+                      className="w-full text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+                      name="url"
+                      type="text"
+                      placeholder="Url Image"
+                      defaultValue={state.menu?.url}
+                      ref={register}
+                    />
+
+                    {errors.url && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.url?.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col mb-4">
+                    <div className="relative">
+                      <select
+                        className="w-full appearance-none text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline:none p-3"
+                        name="category_id"
+                        defaultValue={state.menu?.category.id}
+                        ref={register}
+                      >
+                        <option value="">Select category</option>
+
+                        {state.categories.map((category, index) => (
+                          <option key={index} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                        <ChevronDown className="text-gray-800" size={20} />
+                      </div>
+                    </div>
+
+                    {errors.category_id && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.category_id?.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col mb-4">
+                    <NumberFormat
+                      className="text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
+                      name="price"
+                      placeholder="Price"
+                      thousandSeparator={true}
+                      prefix={"Rp "}
+                      getInputRef={register}
+                      onValueChange={(values) => {
+                        const { value } = values;
+
+                        setState({ ...state, price: value });
+                      }}
+                      defaultValue={state.menu?.price}
+                    />
+
+                    {errors.price && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.price?.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col mb-4">
+                    <div className="flex items-center justify-center">
+                      <div className="mr-8">
+                        <input
+                          className="mr-4"
+                          name="stock"
+                          type="radio"
+                          value="true"
+                          defaultChecked={state.menu?.stock === 1}
+                          ref={register}
+                        />
+
+                        <label className="text-sm text-gray-800 font-medium">
+                          Ready
+                        </label>
+                      </div>
+
+                      <div className="mr-8">
+                        <input
+                          className="mr-4"
+                          name="stock"
+                          type="radio"
+                          value="false"
+                          defaultChecked={state.menu?.stock === 0}
+                          ref={register}
+                        />
+
+                        <label className="text-sm text-gray-800 font-medium">
+                          Not Ready
+                        </label>
+                      </div>
+                    </div>
+
+                    {errors.stock && (
+                      <span className="text-sm text-red-400 text-center">
+                        {errors.stock?.message}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end">
+                  <button
+                    className="text-sm text-white bg-indigo-700 rounded-lg focus:outline-none px-8 py-2"
+                    type="submit"
+                  >
+                    Update
+                  </button>
+
+                  <button
+                    className="text-sm text-gray-800 focus:outline-none px-8 py-2"
+                    onClick={(event) => {
+                      event.preventDefault();
+
+                      setState({ ...state, edit: false });
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </Modal>
+          )
+      )}
+
+      {transitionsDelete.map(
+        ({ item, key, props: style }) =>
+          item && (
+            <Modal
+              key={key}
+              style={style}
+              show={state.delete}
+              onShow={() => setState({ ...state, delete: false })}
+            >
+              <div className="flex mb-8">
+                <div className="mr-4">
+                  <div className="bg-red-400 rounded-full p-2">
+                    <Trash className="text-red-700" size={20} />
+                  </div>
+                </div>
+
+                <div>
+                  <h6 className="text-xl text-gray-800 mb-2">Delete menu</h6>
+
+                  <p className="text-sm text-gray-600">
+                    Are you sure you want to delete menu? All of your data will
+                    be permanently deleted. This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end">
+                <button
+                  className="text-sm text-gray-800 focus:outline-none px-8 py-2"
+                  onClick={() => setState({ ...state, delete: false })}
                 >
-                  <option value="">Select category</option>
-                  {state.categories.map((category, index) => (
-                    <option key={index} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  Cancel
+                </button>
 
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                  <ChevronDown className="text-gray-800" size={20} />
-                </div>
+                <form onSubmit={handleDelete(onSubmitDelete)}>
+                  <button
+                    className="text-sm text-white bg-red-700 rounded-lg focus:outline-none px-8 py-2"
+                    type="submit"
+                  >
+                    Delete
+                  </button>
+                </form>
               </div>
-
-              {errors.category_id && (
-                <span className="text-sm text-red-400 text-center">
-                  {errors.category_id?.message}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col mb-4">
-              <NumberFormat
-                className="text-sm text-gray-800 font-medium bg-gray-200 rounded-lg focus:outline-none p-3"
-                name="price"
-                placeholder="Price"
-                thousandSeparator={true}
-                prefix={"Rp "}
-                getInputRef={register}
-                onValueChange={(values) => {
-                  const { value } = values;
-
-                  setState({ ...state, price: value });
-                }}
-                defaultValue={state.menu && state.menu.price}
-              />
-
-              {errors.price && (
-                <span className="text-sm text-red-400 text-center">
-                  {errors.price?.message}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col mb-4">
-              <div className="flex items-center justify-center">
-                <div className="mr-8">
-                  <input
-                    className="mr-4"
-                    name="stock"
-                    type="radio"
-                    value="true"
-                    defaultChecked={state.menu && state.menu.stock === 1}
-                    ref={register}
-                  />{" "}
-                  <label className="text-sm text-gray-800 font-medium">
-                    Ready
-                  </label>
-                </div>
-
-                <div className="mr-8">
-                  <input
-                    className="mr-4"
-                    name="stock"
-                    type="radio"
-                    value="false"
-                    defaultChecked={state.menu && state.menu.stock === 0}
-                    ref={register}
-                  />{" "}
-                  <label className="text-sm text-gray-800 font-medium">
-                    Not Ready
-                  </label>
-                </div>
-              </div>
-
-              {errors.stock && (
-                <span className="text-sm text-red-400 text-center">
-                  {errors.stock?.message}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end">
-            <button
-              className="text-sm text-gray-800 px-8 py-2"
-              onClick={() =>
-                setState({ ...state, menu: null, show: !state.show })
-              }
-            >
-              Cancel
-            </button>
-
-            <button
-              className="text-sm text-white bg-indigo-700 rounded-lg px-8 py-2"
-              type="submit"
-            >
-              {state.menu ? "Update" : "Save"}
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      <Modal
-        show={state.delete}
-        onShow={() => setState({ ...state, menu: null, delete: !state.delete })}
-      >
-        <div className="flex mb-8">
-          <div className="mr-4">
-            <div className="bg-red-400 rounded-full p-2">
-              <Trash className="text-red-700" size={20} />
-            </div>
-          </div>
-
-          <div>
-            <h6 className="text-xl text-gray-800 mb-2">Delete menu</h6>
-
-            <p className="text-sm text-gray-600">
-              Are you sure you want to delete menu? All of your data will be
-              permanently deleted. This action cannot be undone.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end">
-          <button
-            className="text-sm text-gray-800 px-8 py-2"
-            onClick={() =>
-              setState({ ...state, menu: null, delete: !state.delete })
-            }
-          >
-            Cancel
-          </button>
-
-          <form onSubmit={handleDelete(onDelete)}>
-            <button
-              className="text-sm text-white bg-red-700 rounded-lg px-8 py-2"
-              type="submit"
-            >
-              Delete
-            </button>
-          </form>
-        </div>
-      </Modal>
+            </Modal>
+          )
+      )}
     </Main>
   );
 };

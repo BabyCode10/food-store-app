@@ -9149,10 +9149,10 @@ react-feather@^2.0.8:
   dependencies:
     prop-types "^15.7.2"
 
-react-flash-message@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/react-flash-message/-/react-flash-message-1.0.4.tgz#b2a6e8754ecbe8d1a8047ef526e9cd41e94c9445"
-  integrity sha512-26Xp5/YhmWN2ZcSU24y+FLTWbdwL5/l1jySb314GlXMPFOtbDRQeohFEoAXI19ISWiBciV96IIeZDIcbek6r/Q==
+react-flash-message@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/react-flash-message/-/react-flash-message-1.0.5.tgz#1bca3a19597ba6e3c950344cc7fc752df0b653f3"
+  integrity sha512-Xaza4Tub+ByjaPkBlMYFCh34rZsyxSK1A63lpot10a8I+D8hUt9GfW2Sy1GVfUaClRBc2sBT7kYYXg7KGZTW4w==
   dependencies:
     prop-types "^15.6.1"
 
@@ -9280,6 +9280,11 @@ react-spring@^8.0.27:
   dependencies:
     "@babel/runtime" "^7.3.1"
     prop-types "^15.5.8"
+
+react-table@^7.6.2:
+  version "7.6.2"
+  resolved "https://registry.yarnpkg.com/react-table/-/react-table-7.6.2.tgz#b60932fa6d457c2bca0da49815cd6a8fe9451f77"
+  integrity sha512-urwNZTieb+xg/+BITUIrqdH5jZfJlw7rKVAAq25iXpBPwbQojLCEKJuGycLbVwn8fzU+Ovly3y8HHNaLNrPCvQ==
 
 react@^16.14.0:
   version "16.14.0"
